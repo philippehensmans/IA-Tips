@@ -39,9 +39,23 @@ try {
         $sourceUrl = trim($_POST['source_url'] ?? '');
         $type = $_POST['type'] ?? 'article';
 
-        if (empty($content)) {
-            $alert = ['type' => 'error', 'message' => 'Le contenu est requis.'];
-        } else {
+        // Gestion de l'upload de fichier
+        if (!empty($_FILES['file']['name']) && $_FILES['file']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $parseResult = FileParser::parse($_FILES['file']);
+            if (isset($parseResult['error'])) {
+                $alert = ['type' => 'error', 'message' => 'Erreur fichier : ' . $parseResult['error']];
+            } else {
+                $content = $parseResult['content'];
+                // Utiliser le nom du fichier comme source si pas d'URL
+                if (empty($sourceUrl)) {
+                    $sourceUrl = 'Fichier: ' . $_FILES['file']['name'];
+                }
+            }
+        }
+
+        if (empty($content) && $alert === null) {
+            $alert = ['type' => 'error', 'message' => 'Le contenu est requis (collez du texte ou uploadez un fichier).'];
+        } elseif ($alert === null) {
             // Vérifier que la clé API Claude est configurée
             if (CLAUDE_API_KEY === 'YOUR_API_KEY_HERE') {
                 $alert = ['type' => 'error', 'message' => 'La clé API Claude n\'est pas configurée. Modifiez le fichier config.php ou définissez la variable d\'environnement CLAUDE_API_KEY.'];
@@ -107,7 +121,7 @@ ob_start();
 
 <div class="article-section">
     <p>
-        Collez ici le contenu que vous souhaitez analyser. Sélectionnez le type de contenu :
+        Collez du texte ou importez un fichier (MD, PDF, TXT). Sélectionnez le type de contenu :
     </p>
     <ul>
         <li><strong>Article</strong> : L'IA génèrera un résumé et extraira les points clés.</li>
@@ -116,7 +130,7 @@ ob_start();
 </div>
 
 <div class="editor-container">
-    <form method="post" action="">
+    <form method="post" action="" enctype="multipart/form-data">
         <div class="form-group">
             <label for="type">Type de contenu *</label>
             <div class="type-selector">
@@ -146,8 +160,15 @@ ob_start();
         </div>
 
         <div class="form-group">
-            <label for="content">Contenu à analyser *</label>
-            <textarea id="content" name="content" class="large" required placeholder="Collez ici le texte de l'article ou le prompt à analyser..."><?= htmlspecialchars($_POST['content'] ?? '') ?></textarea>
+            <label for="file">Importer un fichier (optionnel)</label>
+            <input type="file" id="file" name="file" accept=".md,.txt,.pdf">
+            <p class="help-text">Formats acceptés : Markdown (.md), Texte (.txt), PDF (.pdf) - Max 10 Mo</p>
+        </div>
+
+        <div class="form-group">
+            <label for="content">Ou collez le contenu ici</label>
+            <textarea id="content" name="content" class="large" placeholder="Collez ici le texte de l'article ou le prompt à analyser..."><?= htmlspecialchars($_POST['content'] ?? '') ?></textarea>
+            <p class="help-text">Si vous importez un fichier, ce champ sera ignoré</p>
         </div>
 
         <div class="btn-group">
