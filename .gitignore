@@ -1,0 +1,15 @@
+# Configuration locale (contient les clés API)
+config.local.php
+
+# Base de données SQLite
+data/*.db
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
