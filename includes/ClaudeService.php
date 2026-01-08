@@ -67,8 +67,8 @@ class ClaudeService {
      */
     private function buildArticleAnalysisPrompt(string $content, string $sourceUrl): string {
         $categories = implode(', ', $this->articleCategories);
-        return <<<PROMPT
-Tu es un expert en Intelligence Artificielle. Analyse le contenu suivant (article, tutoriel, ou actualité sur l'IA) et fournis une réponse structurée en JSON.
+        return <<<ANALYSIS_TEXT
+Tu es un expert en Intelligence Artificielle. Analyse le contenu suivant (article, tutoriel, ou actualite sur l'IA) et fournis une reponse structuree en JSON.
 
 SOURCE: $sourceUrl
 
@@ -77,32 +77,32 @@ $content
 
 ---
 
-Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans ```json) contenant exactement cette structure:
+Reponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans ```json) contenant exactement cette structure:
 
 {
-    "title": "Titre proposé pour l'article (concis et informatif)",
-    "summary": "Résumé détaillé du contenu en 3-4 paragraphes. Expliquer le sujet, les concepts clés, les implications pratiques et les perspectives. Le résumé doit permettre de comprendre l'essentiel sans lire l'article original.",
+    "title": "Titre propose pour l'article (concis et informatif)",
+    "summary": "Resume detaille du contenu en 3-4 paragraphes. Expliquer le sujet, les concepts cles, les implications pratiques et les perspectives. Le resume doit permettre de comprendre l'essentiel sans lire l'article original.",
     "main_points": [
-        "Point clé 1 - aspect important du contenu",
-        "Point clé 2 - concept ou technique expliqué",
-        "Point clé 3 - implication pratique",
-        "Point clé 4 - autre élément notable",
-        "Point clé 5 - conclusion ou perspective"
+        "Point cle 1 - aspect important du contenu",
+        "Point cle 2 - concept ou technique explique",
+        "Point cle 3 - implication pratique",
+        "Point cle 4 - autre element notable",
+        "Point cle 5 - conclusion ou perspective"
     ],
     "analysis": {
-        "topic_type": "Type de contenu (tutoriel, actualité, recherche, opinion, comparatif...)",
-        "difficulty_level": "Niveau de difficulté (débutant, intermédiaire, avancé)",
-        "technologies_mentioned": ["Liste des technologies/outils mentionnés"],
+        "topic_type": "Type de contenu (tutoriel, actualite, recherche, opinion, comparatif...)",
+        "difficulty_level": "Niveau de difficulte (debutant, intermediaire, avance)",
+        "technologies_mentioned": ["Liste des technologies/outils mentionnes"],
         "key_takeaways": ["Ce qu'il faut retenir 1", "Ce qu'il faut retenir 2", "Ce qu'il faut retenir 3"],
         "practical_applications": ["Application pratique 1", "Application pratique 2"]
     },
     "suggested_categories": ["llm-modeles-langage", "outils-frameworks"]
 }
 
-Les catégories disponibles sont: $categories
+Les categories disponibles sont: $categories
 
 Assure-toi que le JSON est valide et complet.
-PROMPT;
+ANALYSIS_TEXT;
     }
 
     /**
@@ -110,43 +110,43 @@ PROMPT;
      */
     private function buildPromptAnalysisPrompt(string $content, string $sourceUrl): string {
         $categories = implode(', ', $this->promptCategories);
-        return <<<PROMPT
+        return <<<ANALYSIS_TEXT
 Tu es un expert en prompt engineering. Analyse le prompt suivant et reformate-le pour qu'il soit directement utilisable.
 
 SOURCE: $sourceUrl
 
-PROMPT A ANALYSER:
+CONTENU A ANALYSER:
 $content
 
 ---
 
-Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans ```json) contenant exactement cette structure:
+Reponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans ```json) contenant exactement cette structure:
 
 {
-    "title": "Nom descriptif du prompt (ex: 'Générateur de code Python avec explications')",
-    "summary": "Description courte du prompt: ce qu'il fait, quand l'utiliser, et les résultats attendus (2-3 phrases).",
+    "title": "Nom descriptif du prompt (ex: 'Generateur de code Python avec explications')",
+    "summary": "Description courte du prompt: ce qu'il fait, quand l'utiliser, et les resultats attendus (2-3 phrases).",
     "main_points": [
         "Cas d'usage 1",
         "Cas d'usage 2",
         "Cas d'usage 3"
     ],
-    "formatted_prompt": "Le prompt reformaté, nettoyé et optimisé. Il doit être directement copiable et utilisable. Utilise des placeholders clairs entre crochets [comme ceci] pour les variables. Garde la structure originale si elle est bonne, sinon améliore-la.",
+    "formatted_prompt": "Le prompt reformate, nettoye et optimise. Il doit etre directement copiable et utilisable. Utilise des placeholders clairs entre crochets [comme ceci] pour les variables. Garde la structure originale si elle est bonne, sinon ameliore-la.",
     "analysis": {
         "prompt_type": "Type de prompt (system prompt, user prompt, few-shot, chain of thought...)",
-        "complexity": "Complexité (simple, modéré, complexe)",
+        "complexity": "Complexite (simple, modere, complexe)",
         "variables": ["Liste des variables/placeholders du prompt"],
-        "best_practices": ["Bonne pratique utilisée 1", "Bonne pratique utilisée 2"],
-        "suggestions": ["Suggestion d'amélioration 1", "Suggestion d'amélioration 2"]
+        "best_practices": ["Bonne pratique utilisee 1", "Bonne pratique utilisee 2"],
+        "suggestions": ["Suggestion d'amelioration 1", "Suggestion d'amelioration 2"]
     },
     "suggested_categories": ["prompt-developpement"]
 }
 
-Les catégories disponibles sont: $categories
+Les categories disponibles sont: $categories
 
-IMPORTANT: Le champ "formatted_prompt" doit contenir le prompt prêt à l'emploi, bien structuré avec des sauts de ligne appropriés (\\n pour les retours à la ligne).
+IMPORTANT: Le champ "formatted_prompt" doit contenir le prompt pret a l'emploi, bien structure avec des sauts de ligne appropries (\\n pour les retours a la ligne).
 
 Assure-toi que le JSON est valide et complet.
-PROMPT;
+ANALYSIS_TEXT;
     }
 
     /**
