@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "WikiTips - Capture & Analyse",
-    "version": "1.0.0",
-    "description": "Capturez du contenu web et analysez-le sous l'angle des droits humains",
+    "name": "IA-Tips - Capture",
+    "version": "2.0.0",
+    "description": "Capturez des articles et prompts IA pour votre base de connaissances",
     "permissions": [
         "activeTab",
         "storage",

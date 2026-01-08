@@ -41,10 +41,10 @@
 
     <nav class="wiki-nav">
         <a href="<?= url() ?>">Accueil</a>
-        <a href="<?= url('articles.php') ?>">Articles</a>
+        <a href="<?= url('articles.php?type=article') ?>">Articles</a>
+        <a href="<?= url('articles.php?type=prompt') ?>">Prompts</a>
         <a href="<?= url('categories.php') ?>">Catégories</a>
         <?php if ($isLoggedIn): ?>
-            <a href="<?= url('new.php') ?>">Nouvel article</a>
             <a href="<?= url('import.php') ?>">Importer</a>
         <?php endif; ?>
     </nav>
@@ -55,21 +55,44 @@
                 <h3>Navigation</h3>
                 <ul>
                     <li><a href="<?= url() ?>">Page d'accueil</a></li>
-                    <li><a href="<?= url('articles.php') ?>">Tous les articles</a></li>
+                    <li><a href="<?= url('articles.php') ?>">Tous les contenus</a></li>
+                    <li><a href="<?= url('articles.php?type=article') ?>">Articles</a></li>
+                    <li><a href="<?= url('articles.php?type=prompt') ?>">Prompts</a></li>
                     <?php if ($isLoggedIn): ?>
                         <li><a href="<?= url('articles.php?status=draft') ?>">Brouillons</a></li>
-                        <li><a href="<?= url('new.php') ?>">Créer un article</a></li>
                     <?php endif; ?>
                 </ul>
             </div>
 
+            <?php if ($isLoggedIn): ?>
             <div class="sidebar-section">
-                <h3>Catégories</h3>
+                <h3>Créer</h3>
+                <ul>
+                    <li><a href="<?= url('import.php') ?>">Importer du contenu</a></li>
+                    <li><a href="<?= url('new.php?type=article') ?>">Nouvel article</a></li>
+                    <li><a href="<?= url('new.php?type=prompt') ?>">Nouveau prompt</a></li>
+                </ul>
+            </div>
+            <?php endif; ?>
+
+            <div class="sidebar-section">
+                <h3>Catégories Articles</h3>
                 <ul>
                     <?php
                     $categoryModel = new Category();
-                    $categories = $categoryModel->getAll();
-                    foreach ($categories as $cat): ?>
+                    $articleCategories = $categoryModel->getAll('article');
+                    foreach ($articleCategories as $cat): ?>
+                        <li><a href="<?= url('category.php?slug=' . htmlspecialchars($cat['slug'])) ?>"><?= htmlspecialchars($cat['name']) ?></a></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Catégories Prompts</h3>
+                <ul>
+                    <?php
+                    $promptCategories = $categoryModel->getAll('prompt');
+                    foreach ($promptCategories as $cat): ?>
                         <li><a href="<?= url('category.php?slug=' . htmlspecialchars($cat['slug'])) ?>"><?= htmlspecialchars($cat['name']) ?></a></li>
                     <?php endforeach; ?>
                 </ul>
@@ -79,7 +102,6 @@
             <div class="sidebar-section">
                 <h3>Outils</h3>
                 <ul>
-                    <li><a href="<?= url('import.php') ?>">Importer du contenu</a></li>
                     <li><a href="<?= url('api/index.php?action=health') ?>" target="_blank">État de l'API</a></li>
                     <?php if ($auth->isAdmin()): ?>
                         <li><a href="<?= url('users.php') ?>">Gérer les utilisateurs</a></li>
@@ -110,7 +132,7 @@
     </div>
 
     <footer class="wiki-footer">
-        <p>&copy; <?= date('Y') ?> <?= SITE_NAME ?>. Veille et analyse sous l'angle des droits humains.</p>
+        <p>&copy; <?= date('Y') ?> <?= SITE_NAME ?>. Votre base de connaissances IA personnelle.</p>
         <p>Les analyses sont générées avec l'aide de l'IA et doivent être vérifiées.</p>
     </footer>
 

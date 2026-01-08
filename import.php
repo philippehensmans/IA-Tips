@@ -1,6 +1,6 @@
 <?php
 /**
- * WikiTips - Importer et analyser du contenu
+ * IA-Tips - Importer et analyser du contenu (article ou prompt)
  */
 require_once __DIR__ . '/config.php';
 
@@ -17,6 +17,7 @@ $analysisResult = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $content = trim($_POST['content'] ?? '');
     $sourceUrl = trim($_POST['source_url'] ?? '');
+    $type = $_POST['type'] ?? 'article';
 
     if (empty($content)) {
         $alert = ['type' => 'error', 'message' => 'Le contenu est requis.'];
@@ -26,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $alert = ['type' => 'error', 'message' => 'La clé API Claude n\'est pas configurée. Modifiez le fichier config.php ou définissez la variable d\'environnement CLAUDE_API_KEY.'];
         } else {
             $claude = new ClaudeService();
-            $result = $claude->analyzeContent($content, $sourceUrl);
+            $result = $claude->analyzeContent($content, $sourceUrl, $type);
 
             if (isset($result['error'])) {
                 $alert = ['type' => 'error', 'message' => 'Erreur d\'analyse : ' . $result['error']];
@@ -44,11 +45,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $articleModel = new Article();
                 $articleId = $articleModel->create([
                     'title' => $result['title'],
+                    'type' => $type,
                     'source_url' => $sourceUrl,
                     'source_content' => $content,
                     'summary' => $result['summary'],
                     'main_points' => $result['main_points'],
-                    'human_rights_analysis' => $result['human_rights_analysis'],
+                    'analysis' => $result['analysis'] ?? null,
+                    'formatted_prompt' => $result['formatted_prompt'] ?? null,
                     'categories' => $categoryIds,
                     'status' => 'draft'
                 ]);
@@ -66,18 +69,43 @@ ob_start();
 ?>
 
 <div class="article-header">
-    <h1>Importer et analyser du contenu</h1>
+    <h1>Importer du contenu</h1>
 </div>
 
 <div class="article-section">
     <p>
-        Collez ici le contenu que vous souhaitez analyser. L'IA identifiera les points principaux
-        et les analysera sous l'angle des droits humains et du droit international humanitaire.
+        Collez ici le contenu que vous souhaitez analyser. Sélectionnez le type de contenu :
     </p>
+    <ul>
+        <li><strong>Article</strong> : L'IA génèrera un résumé et extraira les points clés.</li>
+        <li><strong>Prompt</strong> : L'IA reformatera le prompt pour qu'il soit directement utilisable.</li>
+    </ul>
 </div>
 
 <div class="editor-container">
     <form method="post" action="">
+        <div class="form-group">
+            <label for="type">Type de contenu *</label>
+            <div class="type-selector">
+                <label class="type-option">
+                    <input type="radio" name="type" value="article" <?= ($_POST['type'] ?? 'article') === 'article' ? 'checked' : '' ?>>
+                    <span class="type-card">
+                        <span class="type-icon">📄</span>
+                        <span class="type-label">Article</span>
+                        <span class="type-desc">Actualité, tutoriel, analyse sur l'IA</span>
+                    </span>
+                </label>
+                <label class="type-option">
+                    <input type="radio" name="type" value="prompt" <?= ($_POST['type'] ?? '') === 'prompt' ? 'checked' : '' ?>>
+                    <span class="type-card">
+                        <span class="type-icon">💬</span>
+                        <span class="type-label">Prompt</span>
+                        <span class="type-desc">Prompt à reformater et sauvegarder</span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
         <div class="form-group">
             <label for="source_url">URL source (optionnel)</label>
             <input type="url" id="source_url" name="source_url" placeholder="https://..." value="<?= htmlspecialchars($_POST['source_url'] ?? '') ?>">
@@ -86,7 +114,7 @@ ob_start();
 
         <div class="form-group">
             <label for="content">Contenu à analyser *</label>
-            <textarea id="content" name="content" class="large" required placeholder="Collez ici le texte de l'article, du rapport ou du document à analyser..."><?= htmlspecialchars($_POST['content'] ?? '') ?></textarea>
+            <textarea id="content" name="content" class="large" required placeholder="Collez ici le texte de l'article ou le prompt à analyser..."><?= htmlspecialchars($_POST['content'] ?? '') ?></textarea>
         </div>
 
         <div class="btn-group">

@@ -681,3 +681,294 @@ a:hover {
         max-width: 100%;
     }
 }
+
+/* ==============================
+   IA-Tips Specific Styles
+   ============================== */
+
+/* Type Badges */
+.type-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.type-badge.type-article {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
+}
+
+.type-badge.type-prompt {
+    background: #f3e5f5;
+    color: #7b1fa2;
+    border: 1px solid #e1bee7;
+}
+
+/* Type Selector for forms */
+.type-selector {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.type-option {
+    flex: 1;
+    cursor: pointer;
+}
+
+.type-option input[type="radio"] {
+    display: none;
+}
+
+.type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 15px;
+    border: 2px solid var(--wiki-border);
+    border-radius: 8px;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.type-option input:checked + .type-card {
+    border-color: var(--wiki-blue);
+    background: #e8f0fe;
+}
+
+.type-option:hover .type-card {
+    border-color: var(--wiki-blue-dark);
+}
+
+.type-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.type-label {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.type-desc {
+    font-size: 12px;
+    color: var(--wiki-text-light);
+    text-align: center;
+}
+
+/* Prompt Box */
+.prompt-box {
+    background: #1e1e1e;
+    border-radius: 8px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+.prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: #2d2d2d;
+    border-bottom: 1px solid #404040;
+}
+
+.prompt-header h2 {
+    color: #e0e0e0;
+    font-size: 14px;
+    margin: 0;
+}
+
+.prompt-content {
+    padding: 15px;
+    margin: 0;
+    color: #d4d4d4;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+}
+
+.btn-copy {
+    padding: 6px 12px;
+    background: var(--wiki-blue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-copy:hover {
+    background: var(--wiki-blue-dark);
+}
+
+/* Analysis Box */
+.analysis-box {
+    background: var(--wiki-bg-light);
+    border: 1px solid var(--wiki-border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.analysis-box h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--wiki-text);
+    border-bottom: 1px solid var(--wiki-border);
+    padding-bottom: 10px;
+}
+
+.analysis-meta {
+    margin-bottom: 15px;
+}
+
+.analysis-section {
+    margin-bottom: 15px;
+}
+
+.analysis-section h4 {
+    font-size: 13px;
+    color: var(--wiki-text-light);
+    margin-bottom: 8px;
+}
+
+/* Badges for analysis */
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-right: 5px;
+}
+
+.badge-info {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.badge-level {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.badge-type {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.badge-complexity {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+/* Tech Tags */
+.tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.tech-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #e8e8e8;
+    color: var(--wiki-text);
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* Variable Tags */
+.variable-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.variable-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    background: #2d2d2d;
+    color: #9cdcfe;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+/* Code Textarea */
+.code-textarea {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 13px;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border: 1px solid #404040;
+}
+
+/* Filter Bar */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-label {
+    font-size: 12px;
+    color: var(--wiki-text-light);
+    font-weight: bold;
+}
+
+/* Success Button */
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+/* List Item with Type */
+.article-list-item h3 .type-badge {
+    margin-right: 10px;
+}
+
+/* Responsive for new elements */
+@media (max-width: 768px) {
+    .type-selector {
+        flex-direction: column;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-group {
+        flex-wrap: wrap;
+    }
+
+    .prompt-box {
+        margin: 15px -15px;
+        border-radius: 0;
+    }
+}

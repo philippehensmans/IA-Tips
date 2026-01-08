@@ -1,6 +1,7 @@
 <?php
 /**
  * Classe de gestion de la base de données SQLite
+ * Application de collecte d'articles et prompts IA
  */
 class Database {
     private static $instance = null;
@@ -17,6 +18,7 @@ class Database {
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
         $this->initTables();
+        $this->runMigrations();
     }
 
     public static function getInstance(): self {
@@ -36,11 +38,13 @@ class Database {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 slug TEXT UNIQUE NOT NULL,
+                type TEXT DEFAULT 'article',
                 source_url TEXT,
                 source_content TEXT,
                 summary TEXT,
                 main_points TEXT,
-                human_rights_analysis TEXT,
+                analysis TEXT,
+                formatted_prompt TEXT,
                 content TEXT,
                 status TEXT DEFAULT 'draft',
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -53,7 +57,8 @@ class Database {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT UNIQUE NOT NULL,
                 slug TEXT UNIQUE NOT NULL,
-                description TEXT
+                description TEXT,
+                type TEXT DEFAULT 'article'
             )
         ");
 
@@ -68,18 +73,29 @@ class Database {
         ");
 
         // Insérer les catégories par défaut si elles n'existent pas
+        // Catégories pour les articles IA
         $defaultCategories = [
-            ['Droits civils et politiques', 'droits-civils-politiques', 'Libertés fondamentales, droit de vote, liberté d\'expression...'],
-            ['Droits économiques et sociaux', 'droits-economiques-sociaux', 'Droit au travail, à la santé, à l\'éducation...'],
-            ['Droits culturels', 'droits-culturels', 'Droit à la culture, aux pratiques culturelles...'],
-            ['Droit international humanitaire', 'droit-humanitaire', 'Conventions de Genève, protection des civils...'],
-            ['Droits des réfugiés', 'droits-refugies', 'Convention de 1951, protection internationale...'],
-            ['Droits des enfants', 'droits-enfants', 'Convention des droits de l\'enfant...'],
-            ['Droits des femmes', 'droits-femmes', 'CEDAW, égalité des genres...'],
-            ['Non-discrimination', 'non-discrimination', 'Égalité, lutte contre les discriminations...']
+            // Articles IA
+            ['LLM & Modèles de langage', 'llm-modeles-langage', 'GPT, Claude, Llama, modèles de fondation...', 'article'],
+            ['Agents IA', 'agents-ia', 'Agents autonomes, workflows, automatisation...', 'article'],
+            ['Vision & Multimodal', 'vision-multimodal', 'Génération d\'images, vidéo, reconnaissance visuelle...', 'article'],
+            ['RAG & Embeddings', 'rag-embeddings', 'Retrieval Augmented Generation, bases vectorielles...', 'article'],
+            ['Fine-tuning & Entraînement', 'fine-tuning-entrainement', 'Personnalisation de modèles, techniques d\'entraînement...', 'article'],
+            ['Éthique & Sécurité IA', 'ethique-securite-ia', 'Biais, alignement, sécurité, réglementation...', 'article'],
+            ['Outils & Frameworks', 'outils-frameworks', 'LangChain, LlamaIndex, bibliothèques, APIs...', 'article'],
+            ['Actualités IA', 'actualites-ia', 'Nouvelles, annonces, tendances du secteur...', 'article'],
+            // Catégories pour les prompts
+            ['Développement', 'prompt-developpement', 'Prompts pour la programmation, le code, le debugging...', 'prompt'],
+            ['Rédaction', 'prompt-redaction', 'Prompts pour l\'écriture, la rédaction, le copywriting...', 'prompt'],
+            ['Analyse', 'prompt-analyse', 'Prompts pour l\'analyse de données, documents, recherche...', 'prompt'],
+            ['Créativité', 'prompt-creativite', 'Prompts pour le brainstorming, l\'idéation, la création...', 'prompt'],
+            ['Productivité', 'prompt-productivite', 'Prompts pour l\'organisation, la planification, les tâches...', 'prompt'],
+            ['Éducation', 'prompt-education', 'Prompts pour l\'apprentissage, l\'enseignement, l\'explication...', 'prompt'],
+            ['Business', 'prompt-business', 'Prompts pour le marketing, les ventes, la stratégie...', 'prompt'],
+            ['Système', 'prompt-systeme', 'System prompts, instructions de base, rôles...', 'prompt']
         ];
 
-        $stmt = $this->pdo->prepare("INSERT OR IGNORE INTO categories (name, slug, description) VALUES (?, ?, ?)");
+        $stmt = $this->pdo->prepare("INSERT OR IGNORE INTO categories (name, slug, description, type) VALUES (?, ?, ?, ?)");
         foreach ($defaultCategories as $cat) {
             $stmt->execute($cat);
         }
@@ -120,17 +136,47 @@ class Database {
         // Créer la page d'accueil par défaut si elle n'existe pas
         $stmt = $this->pdo->query("SELECT COUNT(*) FROM pages WHERE slug = 'home'");
         if ((int)$stmt->fetchColumn() === 0) {
-            $defaultContent = '<p>Ce wiki est dédié à la veille et à l\'analyse d\'informations sous l\'angle des droits humains.</p>
+            $defaultContent = '<p>Bienvenue sur votre base de connaissances personnelle dédiée à l\'Intelligence Artificielle.</p>
 
-<p>Chaque article publié ici est analysé pour identifier les points d\'attention concernant :</p>
+<p>Cette application vous permet de collecter et organiser :</p>
 
 <ul>
-    <li><strong>Les droits civils et politiques</strong> - libertés fondamentales, droit de vote, liberté d\'expression...</li>
-    <li><strong>Les droits économiques, sociaux et culturels</strong> - droit au travail, à la santé, à l\'éducation...</li>
-    <li><strong>Le droit international humanitaire</strong> - Conventions de Genève, protection des civils en conflit armé...</li>
-</ul>';
+    <li><strong>Des articles sur l\'IA</strong> - Actualités, tutoriels, analyses... L\'IA génère automatiquement un résumé et extrait les points clés.</li>
+    <li><strong>Des prompts</strong> - Vos meilleurs prompts, formatés et prêts à être réutilisés dans vos projets.</li>
+</ul>
+
+<p>Utilisez l\'extension Chrome pour capturer rapidement du contenu depuis n\'importe quelle page web.</p>';
             $this->pdo->prepare("INSERT INTO pages (slug, title, content) VALUES (?, ?, ?)")
                 ->execute(['home', 'Bienvenue', $defaultContent]);
+        }
+    }
+
+    /**
+     * Exécuter les migrations pour mettre à jour la structure existante
+     */
+    private function runMigrations(): void {
+        // Vérifier et ajouter la colonne 'type' à la table articles si elle n'existe pas
+        $stmt = $this->pdo->query("PRAGMA table_info(articles)");
+        $columns = $stmt->fetchAll();
+        $columnNames = array_column($columns, 'name');
+
+        if (!in_array('type', $columnNames)) {
+            $this->pdo->exec("ALTER TABLE articles ADD COLUMN type TEXT DEFAULT 'article'");
+        }
+        if (!in_array('analysis', $columnNames)) {
+            $this->pdo->exec("ALTER TABLE articles ADD COLUMN analysis TEXT");
+        }
+        if (!in_array('formatted_prompt', $columnNames)) {
+            $this->pdo->exec("ALTER TABLE articles ADD COLUMN formatted_prompt TEXT");
+        }
+
+        // Vérifier et ajouter la colonne 'type' à la table categories si elle n'existe pas
+        $stmt = $this->pdo->query("PRAGMA table_info(categories)");
+        $columns = $stmt->fetchAll();
+        $columnNames = array_column($columns, 'name');
+
+        if (!in_array('type', $columnNames)) {
+            $this->pdo->exec("ALTER TABLE categories ADD COLUMN type TEXT DEFAULT 'article'");
         }
     }
 }

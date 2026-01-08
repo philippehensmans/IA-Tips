@@ -10,24 +10,26 @@ class Article {
     }
 
     /**
-     * Créer un nouvel article
+     * Créer un nouvel article ou prompt
      */
     public function create(array $data): int {
         $slug = $this->generateSlug($data['title']);
 
         $stmt = $this->db->prepare("
-            INSERT INTO articles (title, slug, source_url, source_content, summary, main_points, human_rights_analysis, content, status)
-            VALUES (:title, :slug, :source_url, :source_content, :summary, :main_points, :human_rights_analysis, :content, :status)
+            INSERT INTO articles (title, slug, type, source_url, source_content, summary, main_points, analysis, formatted_prompt, content, status)
+            VALUES (:title, :slug, :type, :source_url, :source_content, :summary, :main_points, :analysis, :formatted_prompt, :content, :status)
         ");
 
         $stmt->execute([
             'title' => $data['title'],
             'slug' => $slug,
+            'type' => $data['type'] ?? 'article',
             'source_url' => $data['source_url'] ?? null,
             'source_content' => $data['source_content'] ?? null,
             'summary' => $data['summary'] ?? null,
             'main_points' => $data['main_points'] ?? null,
-            'human_rights_analysis' => $data['human_rights_analysis'] ?? null,
+            'analysis' => $data['analysis'] ?? null,
+            'formatted_prompt' => $data['formatted_prompt'] ?? null,
             'content' => $data['content'] ?? null,
             'status' => $data['status'] ?? 'draft'
         ]);
@@ -43,13 +45,13 @@ class Article {
     }
 
     /**
-     * Mettre à jour un article
+     * Mettre à jour un article ou prompt
      */
     public function update(int $id, array $data): bool {
         $fields = [];
         $params = ['id' => $id];
 
-        $allowedFields = ['title', 'source_url', 'source_content', 'summary', 'main_points', 'human_rights_analysis', 'content', 'status'];
+        $allowedFields = ['title', 'type', 'source_url', 'source_content', 'summary', 'main_points', 'analysis', 'formatted_prompt', 'content', 'status'];
 
         foreach ($allowedFields as $field) {
             if (isset($data[$field])) {
@@ -116,15 +118,25 @@ class Article {
     }
 
     /**
-     * Récupérer tous les articles
+     * Récupérer tous les articles/prompts
      */
-    public function getAll(string $status = null, int $limit = 50, int $offset = 0): array {
+    public function getAll(string $status = null, int $limit = 50, int $offset = 0, string $type = null): array {
         $sql = "SELECT * FROM articles";
         $params = [];
+        $conditions = [];
 
         if ($status) {
-            $sql .= " WHERE status = :status";
+            $conditions[] = "status = :status";
             $params['status'] = $status;
+        }
+
+        if ($type) {
+            $conditions[] = "type = :type";
+            $params['type'] = $type;
+        }
+
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(' AND ', $conditions);
         }
 
         $sql .= " ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
@@ -133,8 +145,8 @@ class Article {
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 
-        if ($status) {
-            $stmt->bindValue(':status', $status);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
         }
 
         $stmt->execute();
