@@ -4,6 +4,11 @@
  * Gestion des articles/prompts et analyse via Claude
  */
 
+// Forcer l'affichage des erreurs pour le débogage
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require_once __DIR__ . '/../config.php';
 
 // Headers CORS et JSON

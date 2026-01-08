@@ -2,67 +2,92 @@
 /**
  * IA-Tips - Importer et analyser du contenu (article ou prompt)
  */
-require_once __DIR__ . '/config.php';
 
-// Authentification requise
-$auth = new Auth();
-$auth->requireLogin();
+// Forcer l'affichage des erreurs (utile sur serveurs partagés)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-$pageTitle = 'Importer du contenu - ' . SITE_NAME;
+// Gestionnaire d'erreurs personnalisé pour capturer toutes les erreurs
+set_error_handler(function($severity, $message, $file, $line) {
+    throw new ErrorException($message, 0, $severity, $file, $line);
+});
 
-$alert = null;
-$analysisResult = null;
+try {
+    require_once __DIR__ . '/config.php';
 
-// Traitement du formulaire
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $content = trim($_POST['content'] ?? '');
-    $sourceUrl = trim($_POST['source_url'] ?? '');
-    $type = $_POST['type'] ?? 'article';
+    // Authentification requise
+    $auth = new Auth();
+    $auth->requireLogin();
 
-    if (empty($content)) {
-        $alert = ['type' => 'error', 'message' => 'Le contenu est requis.'];
-    } else {
-        // Vérifier que la clé API Claude est configurée
-        if (CLAUDE_API_KEY === 'YOUR_API_KEY_HERE') {
-            $alert = ['type' => 'error', 'message' => 'La clé API Claude n\'est pas configurée. Modifiez le fichier config.php ou définissez la variable d\'environnement CLAUDE_API_KEY.'];
+    $pageTitle = 'Importer du contenu - ' . SITE_NAME;
+
+    $alert = null;
+    $analysisResult = null;
+
+    // Traitement du formulaire
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $content = trim($_POST['content'] ?? '');
+        $sourceUrl = trim($_POST['source_url'] ?? '');
+        $type = $_POST['type'] ?? 'article';
+
+        if (empty($content)) {
+            $alert = ['type' => 'error', 'message' => 'Le contenu est requis.'];
         } else {
-            $claude = new ClaudeService();
-            $result = $claude->analyzeContent($content, $sourceUrl, $type);
-
-            if (isset($result['error'])) {
-                $alert = ['type' => 'error', 'message' => 'Erreur d\'analyse : ' . $result['error']];
+            // Vérifier que la clé API Claude est configurée
+            if (CLAUDE_API_KEY === 'YOUR_API_KEY_HERE') {
+                $alert = ['type' => 'error', 'message' => 'La clé API Claude n\'est pas configurée. Modifiez le fichier config.php ou définissez la variable d\'environnement CLAUDE_API_KEY.'];
             } else {
-                $analysisResult = $result;
+                $claude = new ClaudeService();
+                $result = $claude->analyzeContent($content, $sourceUrl, $type);
 
-                // Créer automatiquement un brouillon
-                $categoryModel = new Category();
-                $categoryIds = [];
-                if (!empty($result['suggested_categories'])) {
-                    $cats = $categoryModel->getBySlugs($result['suggested_categories']);
-                    $categoryIds = array_column($cats, 'id');
+                if (isset($result['error'])) {
+                    $alert = ['type' => 'error', 'message' => 'Erreur d\'analyse : ' . $result['error']];
+                } else {
+                    $analysisResult = $result;
+
+                    // Créer automatiquement un brouillon
+                    $categoryModel = new Category();
+                    $categoryIds = [];
+                    if (!empty($result['suggested_categories'])) {
+                        $cats = $categoryModel->getBySlugs($result['suggested_categories']);
+                        $categoryIds = array_column($cats, 'id');
+                    }
+
+                    $articleModel = new Article();
+                    $articleId = $articleModel->create([
+                        'title' => $result['title'],
+                        'type' => $type,
+                        'source_url' => $sourceUrl,
+                        'source_content' => $content,
+                        'summary' => $result['summary'],
+                        'main_points' => $result['main_points'],
+                        'analysis' => $result['analysis'] ?? null,
+                        'formatted_prompt' => $result['formatted_prompt'] ?? null,
+                        'categories' => $categoryIds,
+                        'status' => 'draft'
+                    ]);
+
+                    $newArticle = $articleModel->getById($articleId);
+
+                    header('Location: ' . url('edit.php?id=' . $articleId));
+                    exit;
                 }
-
-                $articleModel = new Article();
-                $articleId = $articleModel->create([
-                    'title' => $result['title'],
-                    'type' => $type,
-                    'source_url' => $sourceUrl,
-                    'source_content' => $content,
-                    'summary' => $result['summary'],
-                    'main_points' => $result['main_points'],
-                    'analysis' => $result['analysis'] ?? null,
-                    'formatted_prompt' => $result['formatted_prompt'] ?? null,
-                    'categories' => $categoryIds,
-                    'status' => 'draft'
-                ]);
-
-                $newArticle = $articleModel->getById($articleId);
-
-                header('Location: ' . url('edit.php?id=' . $articleId));
-                exit;
             }
         }
     }
+} catch (Throwable $e) {
+    // Afficher l'erreur de manière visible
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<!DOCTYPE html><html><head><title>Erreur</title></head><body>';
+    echo '<h1 style="color: red;">Erreur PHP détectée</h1>';
+    echo '<p><strong>Message:</strong> ' . htmlspecialchars($e->getMessage()) . '</p>';
+    echo '<p><strong>Fichier:</strong> ' . htmlspecialchars($e->getFile()) . '</p>';
+    echo '<p><strong>Ligne:</strong> ' . $e->getLine() . '</p>';
+    echo '<h2>Stack trace:</h2>';
+    echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
+    echo '</body></html>';
+    exit;
 }
 
 ob_start();

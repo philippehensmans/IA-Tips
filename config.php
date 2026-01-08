@@ -1,12 +1,16 @@
 <?php
 /**
- * WikiTips - Configuration
- * Application de publication d'articles avec analyse des droits humains
+ * IA-Tips - Configuration
+ * Application de collecte d'articles et prompts sur l'IA
  */
 
 // Charger la configuration locale si elle existe (non versionnée)
-if (file_exists(__DIR__ . '/config.local.php')) {
-    require_once __DIR__ . '/config.local.php';
+$configLocalPath = __DIR__ . '/config.local.php';
+if (file_exists($configLocalPath)) {
+    require_once $configLocalPath;
+} else {
+    // Avertissement si le fichier n'existe pas
+    error_log("ATTENTION: config.local.php manquant. Copiez config.local.php.example vers config.local.php");
 }
 
 // Mode debug (à désactiver en production)
