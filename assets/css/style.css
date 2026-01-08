@@ -982,8 +982,120 @@ a:hover {
     margin-right: 10px;
 }
 
+/* ================================
+   Home Page Two-Column Layout
+   ================================ */
+
+.home-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.home-column {
+    background: #fff;
+    border: 1px solid var(--wiki-border);
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--wiki-bg);
+}
+
+.column-header h2 {
+    margin: 0;
+    font-size: 1.3em;
+    color: var(--wiki-text);
+}
+
+.column-header .view-all {
+    font-size: 0.9em;
+    color: var(--wiki-link);
+}
+
+.content-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.content-list-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--wiki-bg);
+}
+
+.content-list-item:last-child {
+    border-bottom: none;
+}
+
+.content-list-item h3 {
+    margin: 0 0 5px 0;
+    font-size: 1em;
+    font-weight: normal;
+}
+
+.content-list-item h3 a {
+    color: var(--wiki-link);
+}
+
+.content-list-item .summary {
+    margin: 5px 0;
+    font-size: 0.85em;
+    color: var(--wiki-text-light);
+    line-height: 1.4;
+}
+
+.content-list-item .meta {
+    font-size: 0.8em;
+    color: var(--wiki-text-light);
+}
+
+.content-list-item .category-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    margin-left: 5px;
+    background: var(--wiki-bg);
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+.content-list-item .prompt-tag {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.prompt-item {
+    border-left: 3px solid #4caf50;
+    padding-left: 12px;
+    margin-left: -12px;
+}
+
+.empty-message {
+    color: var(--wiki-text-light);
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.85em;
+}
+
 /* Responsive for new elements */
 @media (max-width: 768px) {
+    .home-columns {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
     .type-selector {
         flex-direction: column;
     }
