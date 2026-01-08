@@ -1,5 +1,5 @@
 /**
- * WikiTips Chrome Extension - Popup Script
+ * IA-Tips Chrome Extension - Popup Script
  */
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const analyzeBtn = document.getElementById('analyzeBtn');
     const saveConfigBtn = document.getElementById('saveConfig');
     const settingsLink = document.getElementById('settingsLink');
+    const typeRadios = document.querySelectorAll('input[name="type"]');
 
     // Charger la configuration
     const config = await chrome.storage.local.get(['serverUrl', 'apiKey']);
@@ -84,6 +85,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     analyzeBtn.addEventListener('click', async function() {
         const content = contentTextarea.value.trim();
         const sourceUrl = sourceUrlInput.value;
+        const selectedType = document.querySelector('input[name="type"]:checked').value;
 
         if (!content) {
             showStatus('Veuillez entrer du contenu à analyser', 'error');
@@ -99,7 +101,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         analyzeBtn.disabled = true;
         analyzeBtn.textContent = 'Analyse en cours...';
-        showStatus('Envoi au serveur et analyse via Claude AI...', 'loading');
+
+        const typeLabel = selectedType === 'prompt' ? 'prompt' : 'article';
+        showStatus(`Envoi du ${typeLabel} au serveur et analyse via Claude AI...`, 'loading');
 
         try {
             // Construire l'URL de l'API (supporte /api/analyze ou /api/index.php?action=analyze)
@@ -121,6 +125,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 body: JSON.stringify({
                     content: content,
                     source_url: sourceUrl,
+                    type: selectedType,
                     create_article: true
                 })
             });
@@ -128,7 +133,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             const data = await response.json();
 
             if (data.success) {
-                showStatus('Article créé avec succès! Redirection...', 'success');
+                const successLabel = selectedType === 'prompt' ? 'Prompt créé' : 'Article créé';
+                showStatus(successLabel + ' avec succès! Redirection...', 'success');
 
                 // Ouvrir l'éditeur dans un nouvel onglet
                 if (data.data.article_id) {

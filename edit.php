@@ -1,6 +1,6 @@
 <?php
 /**
- * WikiTips - Modifier un article
+ * IA-Tips - Modifier un article ou prompt
  */
 require_once __DIR__ . '/config.php';
 
@@ -22,10 +22,14 @@ if (!$article) {
     exit;
 }
 
+$isPrompt = ($article['type'] ?? 'article') === 'prompt';
+$typeLabel = $isPrompt ? 'prompt' : 'article';
+
 $pageTitle = 'Modifier : ' . htmlspecialchars($article['title']) . ' - ' . SITE_NAME;
 
 $categoryModel = new Category();
-$categories = $categoryModel->getAll();
+// Filtrer les catégories par type
+$categories = $categoryModel->getAll($article['type'] ?? 'article');
 $articleCategoryIds = array_column($article['categories'], 'id');
 
 $alert = null;
@@ -35,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
     $summary = trim($_POST['summary'] ?? '');
     $mainPoints = trim($_POST['main_points'] ?? '');
-    $humanRightsAnalysis = trim($_POST['human_rights_analysis'] ?? '');
+    $analysis = trim($_POST['analysis'] ?? '');
+    $formattedPrompt = trim($_POST['formatted_prompt'] ?? '');
     $contentField = trim($_POST['content'] ?? '');
     $sourceUrl = trim($_POST['source_url'] ?? '');
     $status = $_POST['status'] ?? 'draft';
@@ -48,7 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'title' => $title,
             'summary' => $summary,
             'main_points' => $mainPoints,
-            'human_rights_analysis' => $humanRightsAnalysis,
+            'analysis' => $analysis,
+            'formatted_prompt' => $formattedPrompt,
             'content' => $contentField,
             'source_url' => $sourceUrl,
             'status' => $status,
@@ -57,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $article = $articleModel->getById($id);
         $articleCategoryIds = array_column($article['categories'], 'id');
-        $alert = ['type' => 'success', 'message' => 'Article mis à jour avec succès.'];
+        $alert = ['type' => 'success', 'message' => ucfirst($typeLabel) . ' mis à jour avec succès.'];
     }
 }
 
@@ -65,9 +71,12 @@ ob_start();
 ?>
 
 <div class="article-header">
-    <h1>Modifier : <?= htmlspecialchars($article['title']) ?></h1>
+    <h1>
+        <span class="type-badge type-<?= $isPrompt ? 'prompt' : 'article' ?>"><?= $isPrompt ? 'Prompt' : 'Article' ?></span>
+        <?= htmlspecialchars($article['title']) ?>
+    </h1>
     <div class="article-meta">
-        <a href="<?= url('article.php?slug=' . htmlspecialchars($article['slug'])) ?>">Voir l'article</a>
+        <a href="<?= url('article.php?slug=' . htmlspecialchars($article['slug'])) ?>">Voir <?= $isPrompt ? 'le prompt' : "l'article" ?></a>
     </div>
 </div>
 
@@ -84,23 +93,31 @@ ob_start();
         </div>
 
         <div class="form-group">
-            <label for="summary">Résumé</label>
+            <label for="summary"><?= $isPrompt ? 'Description' : 'Résumé' ?></label>
             <textarea id="summary" name="summary" rows="4"><?= htmlspecialchars($article['summary'] ?? '') ?></textarea>
         </div>
 
         <div class="form-group">
-            <label for="main_points">Points principaux (HTML)</label>
+            <label for="main_points"><?= $isPrompt ? 'Cas d\'usage (HTML)' : 'Points principaux (HTML)' ?></label>
             <textarea id="main_points" name="main_points" rows="6"><?= htmlspecialchars($article['main_points'] ?? '') ?></textarea>
-            <p class="help-text">Utilisez des balises &lt;ul&gt;&lt;li&gt; pour la liste des points</p>
+            <p class="help-text">Utilisez des balises &lt;ul&gt;&lt;li&gt; pour la liste</p>
+        </div>
+
+        <?php if ($isPrompt): ?>
+        <div class="form-group">
+            <label for="formatted_prompt">Prompt formaté</label>
+            <textarea id="formatted_prompt" name="formatted_prompt" class="code-textarea large"><?= htmlspecialchars($article['formatted_prompt'] ?? '') ?></textarea>
+            <p class="help-text">Le prompt prêt à être copié et utilisé</p>
+        </div>
+        <?php endif; ?>
+
+        <div class="form-group">
+            <label for="analysis"><?= $isPrompt ? 'Analyse du prompt (HTML)' : 'Analyse (HTML)' ?></label>
+            <textarea id="analysis" name="analysis" class="large"><?= htmlspecialchars($article['analysis'] ?? '') ?></textarea>
         </div>
 
         <div class="form-group">
-            <label for="human_rights_analysis">Analyse des droits humains (HTML)</label>
-            <textarea id="human_rights_analysis" name="human_rights_analysis" class="large"><?= htmlspecialchars($article['human_rights_analysis'] ?? '') ?></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="content">Contenu additionnel</label>
+            <label for="content">Contenu additionnel / Notes</label>
             <textarea id="content" name="content" rows="6"><?= htmlspecialchars($article['content'] ?? '') ?></textarea>
         </div>
 
@@ -135,7 +152,7 @@ ob_start();
 
 <script>
 function confirmDelete() {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce <?= $typeLabel ?> ?')) {
         fetch('<?= url('api/index.php?action=articles') ?>/<?= $id ?>', { method: 'DELETE' })
             .then(response => response.json())
             .then(data => {

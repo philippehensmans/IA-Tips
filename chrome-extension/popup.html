@@ -36,7 +36,7 @@
             margin-bottom: 4px;
             color: #333;
         }
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -46,6 +46,45 @@
         textarea {
             min-height: 120px;
             resize: vertical;
+        }
+        .type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .type-option {
+            flex: 1;
+            cursor: pointer;
+        }
+        .type-option input {
+            display: none;
+        }
+        .type-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            transition: all 0.2s;
+        }
+        .type-option input:checked + .type-card {
+            border-color: #3366cc;
+            background: #e8f0fe;
+        }
+        .type-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .type-label {
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .type-desc {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
         }
         .btn {
             display: inline-block;
@@ -112,15 +151,15 @@
 </head>
 <body>
     <h1>
-        <span class="logo">&#128214;</span>
-        WikiTips - Capture
+        <span class="logo">&#129302;</span>
+        IA-Tips - Capture
     </h1>
 
     <div id="status" class="hidden"></div>
 
     <div id="configSection" class="hidden">
         <div class="form-group">
-            <label for="serverUrl">URL du serveur WikiTips</label>
+            <label for="serverUrl">URL du serveur IA-Tips</label>
             <input type="url" id="serverUrl" placeholder="http://localhost:8080">
         </div>
         <div class="form-group">
@@ -132,6 +171,28 @@
     </div>
 
     <div id="captureSection">
+        <div class="form-group">
+            <label>Type de contenu</label>
+            <div class="type-selector">
+                <label class="type-option">
+                    <input type="radio" name="type" value="article" checked>
+                    <span class="type-card">
+                        <span class="type-icon">&#128196;</span>
+                        <span class="type-label">Article</span>
+                        <span class="type-desc">Actualité, tutoriel</span>
+                    </span>
+                </label>
+                <label class="type-option">
+                    <input type="radio" name="type" value="prompt">
+                    <span class="type-card">
+                        <span class="type-icon">&#128172;</span>
+                        <span class="type-label">Prompt</span>
+                        <span class="type-desc">Prompt à sauvegarder</span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
         <div class="form-group">
             <label for="sourceUrl">URL source</label>
             <input type="url" id="sourceUrl" readonly>
