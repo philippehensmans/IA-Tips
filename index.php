@@ -11,9 +11,15 @@ $pageModel = new Page();
 $homePage = $pageModel->getBySlug('home');
 
 $articleModel = new Article();
+$categoryModel = new Category();
+
 // Récupérer articles et prompts séparément
 $recentArticles = $articleModel->getAll('published', 5, 0, 'article');
 $recentPrompts = $articleModel->getAll('published', 5, 0, 'prompt');
+
+// Récupérer les catégories de prompts et d'articles
+$promptCategories = $categoryModel->getAll('prompt');
+$articleCategories = $categoryModel->getAll('article');
 
 $auth = new Auth();
 $isLoggedIn = $auth->isLoggedIn();
@@ -50,6 +56,19 @@ ob_start();
             <a href="<?= url('articles.php?type=article') ?>" class="view-all">Voir tous</a>
         </div>
 
+        <?php if (!empty($articleCategories)): ?>
+        <div class="category-dropdown">
+            <select onchange="if(this.value) window.location.href=this.value">
+                <option value="">Filtrer par catégorie...</option>
+                <?php foreach ($articleCategories as $cat): ?>
+                    <option value="<?= url('category.php?slug=' . htmlspecialchars($cat['slug'])) ?>">
+                        <?= htmlspecialchars($cat['name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <?php endif; ?>
+
         <?php if (empty($recentArticles)): ?>
             <p class="empty-message">Aucun article publié pour le moment.</p>
             <?php if ($isLoggedIn): ?>
@@ -83,6 +102,19 @@ ob_start();
             <h2>💬 Prompts récents</h2>
             <a href="<?= url('articles.php?type=prompt') ?>" class="view-all">Voir tous</a>
         </div>
+
+        <?php if (!empty($promptCategories)): ?>
+        <div class="category-dropdown">
+            <select onchange="if(this.value) window.location.href=this.value">
+                <option value="">Filtrer par catégorie...</option>
+                <?php foreach ($promptCategories as $cat): ?>
+                    <option value="<?= url('category.php?slug=' . htmlspecialchars($cat['slug'])) ?>">
+                        <?= htmlspecialchars($cat['name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <?php endif; ?>
 
         <?php if (empty($recentPrompts)): ?>
             <p class="empty-message">Aucun prompt publié pour le moment.</p>
