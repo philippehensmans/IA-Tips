@@ -72,7 +72,7 @@ Tu es un expert en Intelligence Artificielle. Analyse le contenu suivant (articl
 
 SOURCE: $sourceUrl
 
-CONTENU À ANALYSER:
+CONTENU A ANALYSER:
 $content
 
 ---
@@ -115,7 +115,7 @@ Tu es un expert en prompt engineering. Analyse le prompt suivant et reformate-le
 
 SOURCE: $sourceUrl
 
-PROMPT À ANALYSER:
+PROMPT A ANALYSER:
 $content
 
 ---
