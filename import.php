@@ -8,9 +8,17 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Gestionnaire d'erreurs personnalisé pour capturer toutes les erreurs
+// Gestionnaire d'erreurs personnalisé (ignore les warnings de constantes redéfinies)
 set_error_handler(function($severity, $message, $file, $line) {
-    throw new ErrorException($message, 0, $severity, $file, $line);
+    // Ignorer les avertissements de constantes déjà définies
+    if (strpos($message, 'Constant') !== false && strpos($message, 'already defined') !== false) {
+        return true; // Ignorer silencieusement
+    }
+    // Convertir les autres erreurs en exceptions
+    if ($severity & (E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR)) {
+        throw new ErrorException($message, 0, $severity, $file, $line);
+    }
+    return false; // Laisser PHP gérer les autres erreurs normalement
 });
 
 try {
