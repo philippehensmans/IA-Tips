@@ -10,10 +10,15 @@ class Category {
     }
 
     /**
-     * Récupérer toutes les catégories
+     * Récupérer toutes les catégories (optionnellement filtrées par type)
      */
-    public function getAll(): array {
-        $stmt = $this->db->query("SELECT * FROM categories ORDER BY name");
+    public function getAll(string $type = null): array {
+        if ($type) {
+            $stmt = $this->db->prepare("SELECT * FROM categories WHERE type = ? ORDER BY name");
+            $stmt->execute([$type]);
+        } else {
+            $stmt = $this->db->query("SELECT * FROM categories ORDER BY name");
+        }
         return $stmt->fetchAll();
     }
 

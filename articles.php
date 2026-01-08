@@ -1,46 +1,66 @@
 <?php
 /**
- * WikiTips - Liste des articles
+ * IA-Tips - Liste des articles et prompts
  */
 require_once __DIR__ . '/config.php';
 
 $status = $_GET['status'] ?? null;
-$pageTitle = 'Articles' . ($status === 'draft' ? ' - Brouillons' : '') . ' - ' . SITE_NAME;
+$type = $_GET['type'] ?? null;
+
+$typeLabel = $type === 'prompt' ? 'Prompts' : ($type === 'article' ? 'Articles' : 'Tous les contenus');
+$pageTitle = $typeLabel . ($status === 'draft' ? ' - Brouillons' : '') . ' - ' . SITE_NAME;
 
 $articleModel = new Article();
-$articles = $articleModel->getAll($status);
+$articles = $articleModel->getAll($status, 50, 0, $type);
 
 ob_start();
 ?>
 
 <div class="article-header">
-    <h1><?= $status === 'draft' ? 'Brouillons' : 'Tous les articles' ?></h1>
+    <h1><?= $status === 'draft' ? 'Brouillons - ' : '' ?><?= $typeLabel ?></h1>
 </div>
 
 <div class="article-section">
-    <p>
-        <a href="<?= url('articles.php') ?>" class="btn <?= !$status ? 'btn-primary' : '' ?>">Tous</a>
-        <a href="<?= url('articles.php?status=published') ?>" class="btn <?= $status === 'published' ? 'btn-primary' : '' ?>">Publiés</a>
-        <a href="<?= url('articles.php?status=draft') ?>" class="btn <?= $status === 'draft' ? 'btn-primary' : '' ?>">Brouillons</a>
-        <a href="<?= url('new.php') ?>" class="btn">+ Nouvel article</a>
-    </p>
+    <div class="filter-bar">
+        <div class="filter-group">
+            <span class="filter-label">Type :</span>
+            <a href="<?= url('articles.php' . ($status ? '?status=' . $status : '')) ?>" class="btn <?= !$type ? 'btn-primary' : '' ?>">Tous</a>
+            <a href="<?= url('articles.php?type=article' . ($status ? '&status=' . $status : '')) ?>" class="btn <?= $type === 'article' ? 'btn-primary' : '' ?>">Articles</a>
+            <a href="<?= url('articles.php?type=prompt' . ($status ? '&status=' . $status : '')) ?>" class="btn <?= $type === 'prompt' ? 'btn-primary' : '' ?>">Prompts</a>
+        </div>
+        <div class="filter-group">
+            <span class="filter-label">Statut :</span>
+            <a href="<?= url('articles.php' . ($type ? '?type=' . $type : '')) ?>" class="btn <?= !$status ? 'btn-primary' : '' ?>">Tous</a>
+            <a href="<?= url('articles.php?status=published' . ($type ? '&type=' . $type : '')) ?>" class="btn <?= $status === 'published' ? 'btn-primary' : '' ?>">Publiés</a>
+            <a href="<?= url('articles.php?status=draft' . ($type ? '&type=' . $type : '')) ?>" class="btn <?= $status === 'draft' ? 'btn-primary' : '' ?>">Brouillons</a>
+        </div>
+        <div class="filter-group">
+            <a href="<?= url('new.php?type=article') ?>" class="btn btn-success">+ Article</a>
+            <a href="<?= url('new.php?type=prompt') ?>" class="btn btn-success">+ Prompt</a>
+            <a href="<?= url('import.php') ?>" class="btn">Importer</a>
+        </div>
+    </div>
 </div>
 
 <?php if (empty($articles)): ?>
     <div class="alert alert-info">
-        Aucun article trouvé.
-        <a href="<?= url('new.php') ?>">Créer un article</a> ou <a href="<?= url('import.php') ?>">importer du contenu</a>.
+        Aucun contenu trouvé.
+        <a href="<?= url('new.php?type=article') ?>">Créer un article</a>,
+        <a href="<?= url('new.php?type=prompt') ?>">créer un prompt</a> ou
+        <a href="<?= url('import.php') ?>">importer du contenu</a>.
     </div>
 <?php else: ?>
     <ul class="article-list">
         <?php foreach ($articles as $article): ?>
+            <?php $isPrompt = ($article['type'] ?? 'article') === 'prompt'; ?>
             <li class="article-list-item">
                 <h3>
+                    <span class="type-badge type-<?= $isPrompt ? 'prompt' : 'article' ?>"><?= $isPrompt ? 'Prompt' : 'Article' ?></span>
                     <a href="<?= url('article.php?slug=' . htmlspecialchars($article['slug'])) ?>"><?= htmlspecialchars($article['title']) ?></a>
                     <span class="status-badge status-<?= $article['status'] ?>"><?= $article['status'] === 'published' ? 'Publié' : 'Brouillon' ?></span>
                 </h3>
                 <?php if ($article['summary']): ?>
-                    <p class="summary"><?= htmlspecialchars(substr($article['summary'], 0, 250)) ?>...</p>
+                    <p class="summary"><?= htmlspecialchars(mb_substr($article['summary'], 0, 250)) ?>...</p>
                 <?php endif; ?>
                 <div class="meta">
                     <?= date('d/m/Y à H:i', strtotime($article['created_at'])) ?>

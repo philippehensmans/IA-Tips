@@ -32,10 +32,10 @@ if (!defined('CLAUDE_MODEL')) {
 
 // Configuration du site
 if (!defined('SITE_NAME')) {
-    define('SITE_NAME', 'WikiTips - Droits Humains');
+    define('SITE_NAME', 'IA-Tips');
 }
 if (!defined('SITE_DESCRIPTION')) {
-    define('SITE_DESCRIPTION', 'Veille et analyse sous l\'angle des droits humains');
+    define('SITE_DESCRIPTION', 'Collection d\'articles et de prompts sur l\'Intelligence Artificielle');
 }
 if (!defined('SITE_URL')) {
     define('SITE_URL', 'http://localhost:8080');

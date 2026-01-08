@@ -1,7 +1,7 @@
 <?php
 /**
- * API REST pour WikiTips
- * Gestion des articles et analyse via Claude
+ * API REST pour IA-Tips
+ * Gestion des articles/prompts et analyse via Claude
  */
 
 require_once __DIR__ . '/../config.php';
@@ -75,7 +75,7 @@ function handleRequest(string $method, array $segments, array $input): array {
 }
 
 /**
- * Gérer les articles
+ * Gérer les articles/prompts
  */
 function handleArticles(string $method, ?string $id, array $input): array {
     $article = new Article();
@@ -86,18 +86,19 @@ function handleArticles(string $method, ?string $id, array $input): array {
                 $result = is_numeric($id) ? $article->getById((int)$id) : $article->getBySlug($id);
                 if (!$result) {
                     http_response_code(404);
-                    return ['error' => true, 'message' => 'Article non trouvé'];
+                    return ['error' => true, 'message' => 'Contenu non trouvé'];
                 }
                 return ['success' => true, 'data' => $result];
             }
 
             $status = $_GET['status'] ?? null;
+            $type = $_GET['type'] ?? null;
             $search = $_GET['search'] ?? null;
 
             if ($search) {
                 $results = $article->search($search);
             } else {
-                $results = $article->getAll($status);
+                $results = $article->getAll($status, 50, 0, $type);
             }
 
             return ['success' => true, 'data' => $results];
@@ -123,7 +124,7 @@ function handleArticles(string $method, ?string $id, array $input): array {
             $existing = $article->getById((int)$id);
             if (!$existing) {
                 http_response_code(404);
-                return ['error' => true, 'message' => 'Article non trouvé'];
+                return ['error' => true, 'message' => 'Contenu non trouvé'];
             }
 
             $article->update((int)$id, $input);
@@ -138,7 +139,7 @@ function handleArticles(string $method, ?string $id, array $input): array {
             }
 
             $article->delete((int)$id);
-            return ['success' => true, 'message' => 'Article supprimé'];
+            return ['success' => true, 'message' => 'Contenu supprimé'];
 
         default:
             http_response_code(405);
@@ -156,6 +157,7 @@ function handleCategories(string $method, ?string $id): array {
     }
 
     $category = new Category();
+    $type = $_GET['type'] ?? null;
 
     if ($id) {
         $result = is_numeric($id) ? $category->getById((int)$id) : $category->getBySlug($id);
@@ -168,7 +170,7 @@ function handleCategories(string $method, ?string $id): array {
         return ['success' => true, 'data' => $result];
     }
 
-    return ['success' => true, 'data' => $category->getAll()];
+    return ['success' => true, 'data' => $category->getAll($type)];
 }
 
 /**
@@ -192,10 +194,14 @@ function handleAnalyze(string $method, array $input): array {
         return ['error' => true, 'message' => 'Contenu requis'];
     }
 
+    // Type par défaut: article
+    $type = $input['type'] ?? 'article';
+
     $claude = new ClaudeService();
     $result = $claude->analyzeContent(
         $input['content'],
-        $input['source_url'] ?? ''
+        $input['source_url'] ?? '',
+        $type
     );
 
     if (isset($result['error'])) {
@@ -203,7 +209,7 @@ function handleAnalyze(string $method, array $input): array {
         return ['error' => true, 'message' => $result['error']];
     }
 
-    // Optionnellement créer l'article directement
+    // Optionnellement créer l'article/prompt directement
     if (!empty($input['create_article']) && $input['create_article'] === true) {
         $category = new Category();
         $categoryIds = [];
@@ -216,11 +222,13 @@ function handleAnalyze(string $method, array $input): array {
         $article = new Article();
         $articleId = $article->create([
             'title' => $result['title'],
+            'type' => $type,
             'source_url' => $input['source_url'] ?? null,
             'source_content' => $input['content'],
             'summary' => $result['summary'],
             'main_points' => $result['main_points'],
-            'human_rights_analysis' => $result['human_rights_analysis'],
+            'analysis' => $result['analysis'] ?? null,
+            'formatted_prompt' => $result['formatted_prompt'] ?? null,
             'categories' => $categoryIds,
             'status' => 'draft'
         ]);
