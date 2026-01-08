@@ -4,22 +4,36 @@
  *
  * Ce fichier n'est pas versionné (voir .gitignore)
  * Personnalisez les valeurs ci-dessous selon votre environnement
+ *
+ * IMPORTANT: Utilisez toujours if (!defined(...)) pour éviter les erreurs
  */
 
-// Mode production (désactive l'affichage des erreurs)
-define('DEBUG_MODE', false);
+// Mode debug (true pour développement, false pour production)
+if (!defined('DEBUG_MODE')) {
+    define('DEBUG_MODE', false);
+}
 
 // Clé API Claude (Anthropic)
 // Obtenez votre clé sur https://console.anthropic.com/
-define('CLAUDE_API_KEY', 'sk-ant-api03-VOTRE-CLE-ICI');
+if (!defined('CLAUDE_API_KEY')) {
+    define('CLAUDE_API_KEY', 'sk-ant-api03-VOTRE-CLE-ICI');
+}
 
 // Clé secrète pour l'API (utilisée par l'extension Chrome)
 // Générez une clé aléatoire sécurisée
-define('API_SECRET_KEY', 'votre-cle-secrete-aleatoire');
+if (!defined('API_SECRET_KEY')) {
+    define('API_SECRET_KEY', 'votre-cle-secrete-aleatoire');
+}
 
 // URL du site (sans slash final)
-define('SITE_URL', 'https://votre-domaine.com');
+if (!defined('SITE_URL')) {
+    define('SITE_URL', 'https://votre-domaine.com');
+}
 
 // Nom et description du site (optionnel)
-// define('SITE_NAME', 'WikiTips - Mon Site');
-// define('SITE_DESCRIPTION', 'Ma description personnalisée');
+// if (!defined('SITE_NAME')) {
+//     define('SITE_NAME', 'IA-Tips - Mon Site');
+// }
+// if (!defined('SITE_DESCRIPTION')) {
+//     define('SITE_DESCRIPTION', 'Ma description personnalisée');
+// }
