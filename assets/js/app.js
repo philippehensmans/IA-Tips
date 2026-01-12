@@ -28,7 +28,9 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialise les barres d'outils de formatage pour les textareas avec data-formatting="true"
  */
 function initFormattingToolbars() {
-    document.querySelectorAll('textarea[data-formatting="true"]').forEach(function(textarea) {
+    var textareas = document.querySelectorAll('textarea[data-formatting="true"]');
+    console.log('Formatting toolbars: found ' + textareas.length + ' textarea(s)');
+    textareas.forEach(function(textarea) {
         createFormattingToolbar(textarea);
     });
 }
