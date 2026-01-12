@@ -126,7 +126,7 @@ ob_start();
 <?php if ($article['summary']): ?>
 <div class="article-section">
     <h2><?= $isPrompt ? 'Description' : 'Résumé' ?></h2>
-    <p><?= nl2br(htmlspecialchars($article['summary'])) ?></p>
+    <div class="summary-content"><?= filterBasicHtml($article['summary']) ?></div>
 </div>
 <?php endif; ?>
 

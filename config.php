@@ -99,3 +99,6 @@ spl_autoload_register(function ($class) {
         require_once $file;
     }
 });
+
+// Charger les fonctions utilitaires
+require_once __DIR__ . '/includes/Helpers.php';

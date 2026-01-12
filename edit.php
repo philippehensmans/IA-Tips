@@ -94,7 +94,8 @@ ob_start();
 
         <div class="form-group">
             <label for="summary"><?= $isPrompt ? 'Description' : 'Résumé' ?></label>
-            <textarea id="summary" name="summary" rows="4"><?= htmlspecialchars($article['summary'] ?? '') ?></textarea>
+            <textarea id="summary" name="summary" rows="4" data-formatting="true"><?= htmlspecialchars($article['summary'] ?? '') ?></textarea>
+            <p class="help-text">Utilisez les boutons pour mettre en <strong>gras</strong>, <em>italique</em> ou <u>souligné</u></p>
         </div>
 
         <div class="form-group">
