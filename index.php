@@ -80,7 +80,7 @@ ob_start();
                     <li class="content-list-item">
                         <h3><a href="<?= url('article.php?slug=' . htmlspecialchars($article['slug'])) ?>"><?= htmlspecialchars($article['title']) ?></a></h3>
                         <?php if ($article['summary']): ?>
-                            <p class="summary"><?= htmlspecialchars(substr($article['summary'], 0, 120)) ?>...</p>
+                            <p class="summary"><?= htmlspecialchars(mb_substr(strip_tags($article['summary']), 0, 120)) ?>...</p>
                         <?php endif; ?>
                         <div class="meta">
                             <?= date('d/m/Y', strtotime($article['created_at'])) ?>
@@ -127,7 +127,7 @@ ob_start();
                     <li class="content-list-item prompt-item">
                         <h3><a href="<?= url('article.php?slug=' . htmlspecialchars($prompt['slug'])) ?>"><?= htmlspecialchars($prompt['title']) ?></a></h3>
                         <?php if ($prompt['summary']): ?>
-                            <p class="summary"><?= htmlspecialchars(substr($prompt['summary'], 0, 120)) ?>...</p>
+                            <p class="summary"><?= htmlspecialchars(mb_substr(strip_tags($prompt['summary']), 0, 120)) ?>...</p>
                         <?php endif; ?>
                         <div class="meta">
                             <?= date('d/m/Y', strtotime($prompt['created_at'])) ?>

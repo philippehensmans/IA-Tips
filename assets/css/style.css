@@ -1119,6 +1119,91 @@ a:hover {
     font-size: 0.85em;
 }
 
+/* ================================
+   Text Formatting Toolbar
+   ================================ */
+
+.formatting-toolbar {
+    display: flex;
+    gap: 5px;
+    padding: 8px;
+    background: var(--wiki-bg);
+    border: 1px solid var(--wiki-border);
+    border-bottom: none;
+    border-radius: 2px 2px 0 0;
+}
+
+.formatting-toolbar button {
+    padding: 6px 10px;
+    background: #fff;
+    border: 1px solid var(--wiki-border);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: normal;
+    min-width: 32px;
+    transition: all 0.15s ease;
+}
+
+.formatting-toolbar button:hover {
+    background: var(--wiki-bg-light);
+    border-color: var(--wiki-blue);
+}
+
+.formatting-toolbar button:active {
+    background: #e8f0fe;
+}
+
+.formatting-toolbar button.btn-bold {
+    font-weight: bold;
+}
+
+.formatting-toolbar button.btn-italic {
+    font-style: italic;
+}
+
+.formatting-toolbar button.btn-underline {
+    text-decoration: underline;
+}
+
+.formatting-toolbar .separator {
+    width: 1px;
+    background: var(--wiki-border);
+    margin: 0 5px;
+}
+
+.formatting-toolbar .help-icon {
+    margin-left: auto;
+    color: var(--wiki-text-light);
+    font-size: 12px;
+    cursor: help;
+}
+
+/* Textarea avec toolbar */
+.textarea-with-toolbar {
+    border-radius: 0 0 2px 2px;
+    border-top: none;
+}
+
+/* Summary content styling */
+.summary-content {
+    line-height: 1.6;
+}
+
+.summary-content strong,
+.summary-content b {
+    font-weight: bold;
+}
+
+.summary-content em,
+.summary-content i {
+    font-style: italic;
+}
+
+.summary-content u {
+    text-decoration: underline;
+}
+
 /* Responsive for new elements */
 @media (max-width: 768px) {
     .home-columns {
@@ -1142,5 +1227,9 @@ a:hover {
     .prompt-box {
         margin: 15px -15px;
         border-radius: 0;
+    }
+
+    .formatting-toolbar {
+        flex-wrap: wrap;
     }
 }
