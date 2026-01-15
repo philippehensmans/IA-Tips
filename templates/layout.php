@@ -136,6 +136,6 @@
         <p>Les analyses sont générées avec l'aide de l'IA et doivent être vérifiées.</p>
     </footer>
 
-    <script src="<?= url('assets/js/app.js') ?>?v=2"></script>
+    <script src="<?= url('assets/js/app.js') ?>?v=3"></script>
 </body>
 </html>
