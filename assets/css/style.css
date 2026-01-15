@@ -1204,6 +1204,64 @@ a:hover {
     text-decoration: underline;
 }
 
+/* Listes dans les résumés */
+.summary-content ul,
+.summary-content ol {
+    margin: 15px 0;
+    padding-left: 25px;
+}
+
+.summary-content ul {
+    list-style-type: disc;
+}
+
+.summary-content ol {
+    list-style-type: decimal;
+}
+
+.summary-content li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.summary-content li:last-child {
+    margin-bottom: 0;
+}
+
+/* Tableaux dans les résumés */
+.summary-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+    background: #fff;
+    border: 1px solid var(--wiki-border);
+}
+
+.summary-content thead {
+    background: var(--wiki-bg);
+}
+
+.summary-content th,
+.summary-content td {
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid var(--wiki-border);
+}
+
+.summary-content th {
+    font-weight: 600;
+    background: var(--wiki-bg-light);
+}
+
+.summary-content tbody tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.summary-content tbody tr:hover {
+    background: #f0f6ff;
+}
+
 /* Responsive for new elements */
 @media (max-width: 768px) {
     .home-columns {
