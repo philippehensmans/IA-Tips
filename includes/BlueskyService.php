@@ -184,26 +184,43 @@ class BlueskyService
     }
 
     /**
-     * Génère le texte du post à partir d'un article
+     * Génère le texte du post à partir d'un article (format accrocheur sans titre)
      */
     public function formatArticlePost(array $article, string $articleUrl): string
     {
-        $title = $article['title'] ?? 'Article';
         $summary = $article['summary'] ?? '';
 
-        // Limiter le résumé pour rester dans les 300 caractères de Bluesky
-        $maxSummaryLength = 200;
-        if (mb_strlen($summary) > $maxSummaryLength) {
-            $summary = mb_substr($summary, 0, $maxSummaryLength - 3) . '...';
+        // Nettoyer le HTML du résumé
+        $summary = strip_tags($summary);
+        $summary = html_entity_decode($summary, ENT_QUOTES, 'UTF-8');
+        $summary = preg_replace('/\s+/', ' ', trim($summary));
+
+        // Créer une accroche percutante à partir du résumé
+        // On prend la première phrase ou les premiers 220 caractères
+        $maxLength = 220;
+
+        // Essayer de couper à la fin d'une phrase
+        $accroche = $summary;
+        if (mb_strlen($summary) > $maxLength) {
+            // Chercher un point dans les premiers caractères
+            $cutPoint = mb_strpos($summary, '. ', 0);
+            if ($cutPoint !== false && $cutPoint < $maxLength && $cutPoint > 50) {
+                $accroche = mb_substr($summary, 0, $cutPoint + 1);
+            } else {
+                // Couper au dernier espace avant la limite
+                $accroche = mb_substr($summary, 0, $maxLength);
+                $lastSpace = mb_strrpos($accroche, ' ');
+                if ($lastSpace > 100) {
+                    $accroche = mb_substr($accroche, 0, $lastSpace) . '...';
+                } else {
+                    $accroche .= '...';
+                }
+            }
         }
 
-        $text = "📰 {$title}";
-
-        if (!empty($summary)) {
-            $text .= "\n\n{$summary}";
-        }
-
-        $text .= "\n\n#DroitsHumains #WikiTips";
+        // Format accrocheur avec emoji et hashtags
+        $text = "💡 " . $accroche;
+        $text .= "\n\n#IA #WikiTips";
 
         return $text;
     }

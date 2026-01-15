@@ -43,14 +43,14 @@ function createFormattingToolbar(textarea) {
     var toolbar = document.createElement('div');
     toolbar.className = 'formatting-toolbar';
 
-    // Boutons de formatage
-    var buttons = [
+    // Boutons de formatage texte
+    var textButtons = [
         { tag: 'strong', label: 'G', title: 'Gras', className: 'btn-bold' },
         { tag: 'em', label: 'I', title: 'Italique', className: 'btn-italic' },
         { tag: 'u', label: 'S', title: 'Souligné', className: 'btn-underline' }
     ];
 
-    buttons.forEach(function(btn) {
+    textButtons.forEach(function(btn) {
         var button = document.createElement('button');
         button.type = 'button';
         button.innerHTML = btn.label;
@@ -62,6 +62,52 @@ function createFormattingToolbar(textarea) {
         });
         toolbar.appendChild(button);
     });
+
+    // Séparateur
+    var separator1 = document.createElement('span');
+    separator1.className = 'separator';
+    toolbar.appendChild(separator1);
+
+    // Bouton liste à puces
+    var btnUl = document.createElement('button');
+    btnUl.type = 'button';
+    btnUl.innerHTML = '• —';
+    btnUl.title = 'Liste à puces';
+    btnUl.className = 'btn-list';
+    btnUl.addEventListener('click', function(e) {
+        e.preventDefault();
+        insertList(textarea, 'ul');
+    });
+    toolbar.appendChild(btnUl);
+
+    // Bouton liste numérotée
+    var btnOl = document.createElement('button');
+    btnOl.type = 'button';
+    btnOl.innerHTML = '1. —';
+    btnOl.title = 'Liste numérotée';
+    btnOl.className = 'btn-list-ol';
+    btnOl.addEventListener('click', function(e) {
+        e.preventDefault();
+        insertList(textarea, 'ol');
+    });
+    toolbar.appendChild(btnOl);
+
+    // Séparateur
+    var separator2 = document.createElement('span');
+    separator2.className = 'separator';
+    toolbar.appendChild(separator2);
+
+    // Bouton tableau
+    var btnTable = document.createElement('button');
+    btnTable.type = 'button';
+    btnTable.innerHTML = '⊞';
+    btnTable.title = 'Insérer un tableau';
+    btnTable.className = 'btn-table';
+    btnTable.addEventListener('click', function(e) {
+        e.preventDefault();
+        insertTable(textarea);
+    });
+    toolbar.appendChild(btnTable);
 
     // Aide
     var help = document.createElement('span');
@@ -101,6 +147,81 @@ function wrapSelection(textarea, openTag, closeTag) {
 
     textarea.focus();
     // Déclencher l'événement input pour l'auto-resize
+    textarea.dispatchEvent(new Event('input'));
+}
+
+/**
+ * Insère une liste (à puces ou numérotée)
+ */
+function insertList(textarea, type) {
+    var start = textarea.selectionStart;
+    var end = textarea.selectionEnd;
+    var text = textarea.value;
+    var selectedText = text.substring(start, end);
+
+    var listHtml;
+    var tagName = type === 'ol' ? 'ol' : 'ul';
+
+    if (selectedText) {
+        // Convertir les lignes sélectionnées en éléments de liste
+        var lines = selectedText.split('\n').filter(function(line) {
+            return line.trim() !== '';
+        });
+        if (lines.length > 0) {
+            var items = lines.map(function(line) {
+                return '<li>' + line.trim() + '</li>';
+            }).join('\n  ');
+            listHtml = '<' + tagName + '>\n  ' + items + '\n</' + tagName + '>';
+        } else {
+            listHtml = '<' + tagName + '>\n  <li>Élément 1</li>\n  <li>Élément 2</li>\n  <li>Élément 3</li>\n</' + tagName + '>';
+        }
+    } else {
+        // Insérer une liste vide avec des éléments par défaut
+        listHtml = '<' + tagName + '>\n  <li>Élément 1</li>\n  <li>Élément 2</li>\n  <li>Élément 3</li>\n</' + tagName + '>';
+    }
+
+    var newText = text.substring(0, start) + listHtml + text.substring(end);
+    textarea.value = newText;
+    textarea.selectionStart = start;
+    textarea.selectionEnd = start + listHtml.length;
+    textarea.focus();
+    textarea.dispatchEvent(new Event('input'));
+}
+
+/**
+ * Insère un tableau HTML
+ */
+function insertTable(textarea) {
+    var start = textarea.selectionStart;
+    var text = textarea.value;
+
+    var tableHtml = '<table>\n' +
+        '  <thead>\n' +
+        '    <tr>\n' +
+        '      <th>En-tête 1</th>\n' +
+        '      <th>En-tête 2</th>\n' +
+        '      <th>En-tête 3</th>\n' +
+        '    </tr>\n' +
+        '  </thead>\n' +
+        '  <tbody>\n' +
+        '    <tr>\n' +
+        '      <td>Cellule 1</td>\n' +
+        '      <td>Cellule 2</td>\n' +
+        '      <td>Cellule 3</td>\n' +
+        '    </tr>\n' +
+        '    <tr>\n' +
+        '      <td>Cellule 4</td>\n' +
+        '      <td>Cellule 5</td>\n' +
+        '      <td>Cellule 6</td>\n' +
+        '    </tr>\n' +
+        '  </tbody>\n' +
+        '</table>';
+
+    var newText = text.substring(0, start) + tableHtml + text.substring(start);
+    textarea.value = newText;
+    textarea.selectionStart = start;
+    textarea.selectionEnd = start + tableHtml.length;
+    textarea.focus();
     textarea.dispatchEvent(new Event('input'));
 }
 

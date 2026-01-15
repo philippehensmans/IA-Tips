@@ -81,7 +81,7 @@ Reponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans ```json) conte
 
 {
     "title": "Titre propose pour l'article (concis et informatif)",
-    "summary": "Resume detaille du contenu en 3-4 paragraphes. Expliquer le sujet, les concepts cles, les implications pratiques et les perspectives. Le resume doit permettre de comprendre l'essentiel sans lire l'article original.",
+    "summary": "Resume detaille et approfondi du contenu en environ 500 mots (4-6 paragraphes). Expliquer en profondeur le sujet, les concepts cles, le contexte, les implications pratiques et les perspectives futures. Le resume doit etre suffisamment complet pour permettre de comprendre tous les aspects importants de l'article sans avoir besoin de lire l'original.",
     "main_points": [
         "Point cle 1 - aspect important du contenu",
         "Point cle 2 - concept ou technique explique",
