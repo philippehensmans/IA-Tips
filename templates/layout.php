@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? SITE_NAME) ?></title>
-    <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=2">
+    <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=4">
     <link rel="icon" href="<?= url('assets/images/favicon.ico') ?>" type="image/x-icon">
 </head>
 <body>
@@ -136,6 +136,6 @@
         <p>Les analyses sont générées avec l'aide de l'IA et doivent être vérifiées.</p>
     </footer>
 
-    <script src="<?= url('assets/js/app.js') ?>?v=3"></script>
+    <script src="<?= url('assets/js/app.js') ?>?v=4"></script>
 </body>
 </html>

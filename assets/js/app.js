@@ -109,6 +109,18 @@ function createFormattingToolbar(textarea) {
     });
     toolbar.appendChild(btnTable);
 
+    // Bouton prompt
+    var btnPrompt = document.createElement('button');
+    btnPrompt.type = 'button';
+    btnPrompt.innerHTML = '{ }';
+    btnPrompt.title = 'Bloc prompt';
+    btnPrompt.className = 'btn-prompt';
+    btnPrompt.addEventListener('click', function(e) {
+        e.preventDefault();
+        insertPrompt(textarea);
+    });
+    toolbar.appendChild(btnPrompt);
+
     // Aide
     var help = document.createElement('span');
     help.className = 'help-icon';
@@ -221,6 +233,32 @@ function insertTable(textarea) {
     textarea.value = newText;
     textarea.selectionStart = start;
     textarea.selectionEnd = start + tableHtml.length;
+    textarea.focus();
+    textarea.dispatchEvent(new Event('input'));
+}
+
+/**
+ * Insère un bloc prompt
+ */
+function insertPrompt(textarea) {
+    var start = textarea.selectionStart;
+    var end = textarea.selectionEnd;
+    var text = textarea.value;
+    var selectedText = text.substring(start, end);
+
+    var promptHtml;
+    if (selectedText) {
+        // Entourer le texte sélectionné
+        promptHtml = '<pre class="prompt">' + selectedText + '</pre>';
+    } else {
+        // Insérer un bloc vide
+        promptHtml = '<pre class="prompt">Votre prompt ici...</pre>';
+    }
+
+    var newText = text.substring(0, start) + promptHtml + text.substring(end);
+    textarea.value = newText;
+    textarea.selectionStart = start;
+    textarea.selectionEnd = start + promptHtml.length;
     textarea.focus();
     textarea.dispatchEvent(new Event('input'));
 }
