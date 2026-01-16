@@ -8,6 +8,13 @@
     <link rel="icon" href="<?= url('assets/images/favicon.ico') ?>" type="image/x-icon">
     <!-- TinyMCE -->
     <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        // Configuration globale pour JavaScript
+        window.APP_CONFIG = {
+            basePath: '<?= BASE_PATH ?>',
+            uploadUrl: '<?= url('api/upload.php') ?>'
+        };
+    </script>
 </head>
 <body>
     <?php
@@ -138,6 +145,6 @@
         <p>Les analyses sont générées avec l'aide de l'IA et doivent être vérifiées.</p>
     </footer>
 
-    <script src="<?= url('assets/js/app.js') ?>?v=5"></script>
+    <script src="<?= url('assets/js/app.js') ?>?v=6"></script>
 </body>
 </html>

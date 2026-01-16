@@ -51,7 +51,7 @@ function initTinyMCE() {
         toolbar: 'undo redo | bold italic underline | bullist numlist | table | image link | codesample | code',
         toolbar_mode: 'wrap',
         // Configuration upload d'images
-        images_upload_url: window.location.origin + '/api/upload.php',
+        images_upload_url: (window.APP_CONFIG ? window.APP_CONFIG.uploadUrl : '/api/upload.php'),
         images_upload_credentials: true,
         automatic_uploads: true,
         file_picker_types: 'image',
@@ -125,7 +125,8 @@ function initTinyMCE() {
         images_upload_handler: function(blobInfo, progress) {
             return new Promise(function(resolve, reject) {
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', window.location.origin + '/api/upload.php');
+                var uploadUrl = window.APP_CONFIG ? window.APP_CONFIG.uploadUrl : '/api/upload.php';
+                xhr.open('POST', uploadUrl);
                 xhr.withCredentials = true;
 
                 xhr.upload.onprogress = function(e) {
