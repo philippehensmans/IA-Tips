@@ -58,13 +58,13 @@ if ($file['size'] > $maxSize) {
 }
 
 // Générer un nom de fichier unique
-$extension = match($mimeType) {
+$extensions = [
     'image/jpeg' => 'jpg',
     'image/png' => 'png',
     'image/gif' => 'gif',
-    'image/webp' => 'webp',
-    default => 'jpg'
-};
+    'image/webp' => 'webp'
+];
+$extension = $extensions[$mimeType] ?? 'jpg';
 
 $filename = uniqid('img_') . '_' . time() . '.' . $extension;
 $uploadDir = __DIR__ . '/../uploads/';
@@ -82,10 +82,9 @@ if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
     exit;
 }
 
-// Générer l'URL de l'image
-$baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://');
-$baseUrl .= $_SERVER['HTTP_HOST'];
-$imageUrl = $baseUrl . url('uploads/' . $filename);
+// Générer l'URL de l'image (chemin relatif depuis la racine)
+$basePath = rtrim(dirname($_SERVER['SCRIPT_NAME'], 2), '/');
+$imageUrl = $basePath . '/uploads/' . $filename;
 
 // Réponse pour TinyMCE
 header('Content-Type: application/json');
