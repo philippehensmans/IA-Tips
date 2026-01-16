@@ -30,8 +30,8 @@ function filterBasicHtml(?string $html): string {
         // Extraire src
         if (preg_match('/src=["\']([^"\']+)["\']/i', $tag, $srcMatch)) {
             $src = htmlspecialchars($srcMatch[1], ENT_QUOTES, 'UTF-8');
-            // N'autoriser que les URLs http(s) et les chemins locaux /uploads/
-            if (!preg_match('/^(https?:\/\/|\/uploads\/)/', $src)) {
+            // N'autoriser que les URLs http(s) et les chemins contenant /uploads/
+            if (!preg_match('/^https?:\/\//', $src) && !preg_match('/\/uploads\//', $src)) {
                 return ''; // Supprimer les images avec des URLs suspectes
             }
         } else {
