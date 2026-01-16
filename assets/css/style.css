@@ -1204,6 +1204,25 @@ a:hover {
     text-decoration: underline;
 }
 
+/* Liens dans les résumés */
+.summary-content a {
+    color: var(--wiki-blue);
+    text-decoration: none;
+}
+
+.summary-content a:hover {
+    text-decoration: underline;
+}
+
+/* Images dans les résumés */
+.summary-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 15px 0;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 /* Listes dans les résumés */
 .summary-content ul,
 .summary-content ol {

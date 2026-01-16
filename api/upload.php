@@ -112,8 +112,9 @@ try {
         exit;
     }
 
-    // Générer l'URL de l'image
-    $imageUrl = '/uploads/' . $filename;
+    // Générer l'URL de l'image avec le BASE_PATH
+    $basePath = defined('BASE_PATH') ? BASE_PATH : '';
+    $imageUrl = $basePath . '/uploads/' . $filename;
 
     // Réponse pour TinyMCE
     echo json_encode(['location' => $imageUrl]);
