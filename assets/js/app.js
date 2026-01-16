@@ -12,125 +12,163 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Auto-resize des textareas
-    document.querySelectorAll('textarea').forEach(function(textarea) {
+    // Auto-resize des textareas (sauf ceux avec TinyMCE)
+    document.querySelectorAll('textarea:not([data-formatting="true"])').forEach(function(textarea) {
         textarea.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
         });
     });
 
-    // Initialiser les barres d'outils de formatage
-    initFormattingToolbars();
+    // Initialiser TinyMCE pour les textareas avec data-formatting="true"
+    initTinyMCE();
 });
 
 /**
- * Initialise les barres d'outils de formatage pour les textareas avec data-formatting="true"
+ * Initialise TinyMCE pour les textareas avec data-formatting="true"
  */
-function initFormattingToolbars() {
+function initTinyMCE() {
     var textareas = document.querySelectorAll('textarea[data-formatting="true"]');
-    console.log('Formatting toolbars: found ' + textareas.length + ' textarea(s)');
-    textareas.forEach(function(textarea) {
-        createFormattingToolbar(textarea);
+    if (textareas.length === 0) return;
+
+    // Vérifier que TinyMCE est chargé
+    if (typeof tinymce === 'undefined') {
+        console.error('TinyMCE n\'est pas chargé');
+        return;
+    }
+
+    tinymce.init({
+        selector: 'textarea[data-formatting="true"]',
+        language: 'fr_FR',
+        language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/fr_FR.min.js',
+        height: 350,
+        menubar: false,
+        branding: false,
+        promotion: false,
+        plugins: [
+            'lists', 'table', 'image', 'link', 'code', 'codesample'
+        ],
+        toolbar: 'undo redo | bold italic underline | bullist numlist | table | image link | codesample | code',
+        toolbar_mode: 'wrap',
+        // Configuration upload d'images
+        images_upload_url: window.location.origin + '/api/upload.php',
+        images_upload_credentials: true,
+        automatic_uploads: true,
+        file_picker_types: 'image',
+        // Permettre le glisser-déposer d'images
+        paste_data_images: true,
+        // Style de l'éditeur
+        content_style: `
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+                padding: 10px;
+            }
+            pre.prompt {
+                background: linear-gradient(135deg, #1e1e2e 0%, #2d2d3d 100%);
+                color: #e0e0e0;
+                padding: 16px 20px;
+                border-radius: 8px;
+                font-family: monospace;
+                font-size: 13px;
+                border-left: 4px solid #6366f1;
+                white-space: pre-wrap;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background: #f5f5f5;
+            }
+            img {
+                max-width: 100%;
+                height: auto;
+            }
+        `,
+        // Formats personnalisés
+        formats: {
+            prompt: { block: 'pre', classes: 'prompt' }
+        },
+        // Configuration du bouton codesample pour les prompts
+        codesample_languages: [
+            { text: 'Prompt', value: 'prompt' },
+            { text: 'JavaScript', value: 'javascript' },
+            { text: 'Python', value: 'python' },
+            { text: 'HTML', value: 'markup' },
+            { text: 'CSS', value: 'css' },
+            { text: 'Bash', value: 'bash' }
+        ],
+        // Callback après initialisation
+        setup: function(editor) {
+            // Bouton personnalisé pour les blocs prompt
+            editor.ui.registry.addButton('promptblock', {
+                text: '{ }',
+                tooltip: 'Bloc Prompt',
+                onAction: function() {
+                    var selectedText = editor.selection.getContent({ format: 'text' });
+                    if (selectedText) {
+                        editor.insertContent('<pre class="prompt">' + selectedText + '</pre>');
+                    } else {
+                        editor.insertContent('<pre class="prompt">Votre prompt ici...</pre>');
+                    }
+                }
+            });
+        },
+        // Gestionnaire d'upload personnalisé
+        images_upload_handler: function(blobInfo, progress) {
+            return new Promise(function(resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', window.location.origin + '/api/upload.php');
+                xhr.withCredentials = true;
+
+                xhr.upload.onprogress = function(e) {
+                    progress(e.loaded / e.total * 100);
+                };
+
+                xhr.onload = function() {
+                    if (xhr.status < 200 || xhr.status >= 300) {
+                        reject('Erreur HTTP: ' + xhr.status);
+                        return;
+                    }
+
+                    var json;
+                    try {
+                        json = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        reject('Réponse JSON invalide');
+                        return;
+                    }
+
+                    if (json.error) {
+                        reject(json.error);
+                        return;
+                    }
+
+                    if (!json.location) {
+                        reject('Pas d\'URL d\'image dans la réponse');
+                        return;
+                    }
+
+                    resolve(json.location);
+                };
+
+                xhr.onerror = function() {
+                    reject('Erreur réseau lors de l\'upload');
+                };
+
+                var formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                xhr.send(formData);
+            });
+        }
     });
-}
-
-/**
- * Crée une barre d'outils de formatage pour un textarea
- */
-function createFormattingToolbar(textarea) {
-    // Créer la barre d'outils
-    var toolbar = document.createElement('div');
-    toolbar.className = 'formatting-toolbar';
-
-    // Boutons de formatage texte
-    var textButtons = [
-        { tag: 'strong', label: 'G', title: 'Gras', className: 'btn-bold' },
-        { tag: 'em', label: 'I', title: 'Italique', className: 'btn-italic' },
-        { tag: 'u', label: 'S', title: 'Souligné', className: 'btn-underline' }
-    ];
-
-    textButtons.forEach(function(btn) {
-        var button = document.createElement('button');
-        button.type = 'button';
-        button.innerHTML = btn.label;
-        button.title = btn.title + ' (<' + btn.tag + '>)';
-        button.className = btn.className || '';
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            wrapSelection(textarea, '<' + btn.tag + '>', '</' + btn.tag + '>');
-        });
-        toolbar.appendChild(button);
-    });
-
-    // Séparateur
-    var separator1 = document.createElement('span');
-    separator1.className = 'separator';
-    toolbar.appendChild(separator1);
-
-    // Bouton liste à puces
-    var btnUl = document.createElement('button');
-    btnUl.type = 'button';
-    btnUl.innerHTML = '• —';
-    btnUl.title = 'Liste à puces';
-    btnUl.className = 'btn-list';
-    btnUl.addEventListener('click', function(e) {
-        e.preventDefault();
-        insertList(textarea, 'ul');
-    });
-    toolbar.appendChild(btnUl);
-
-    // Bouton liste numérotée
-    var btnOl = document.createElement('button');
-    btnOl.type = 'button';
-    btnOl.innerHTML = '1. —';
-    btnOl.title = 'Liste numérotée';
-    btnOl.className = 'btn-list-ol';
-    btnOl.addEventListener('click', function(e) {
-        e.preventDefault();
-        insertList(textarea, 'ol');
-    });
-    toolbar.appendChild(btnOl);
-
-    // Séparateur
-    var separator2 = document.createElement('span');
-    separator2.className = 'separator';
-    toolbar.appendChild(separator2);
-
-    // Bouton tableau
-    var btnTable = document.createElement('button');
-    btnTable.type = 'button';
-    btnTable.innerHTML = '⊞';
-    btnTable.title = 'Insérer un tableau';
-    btnTable.className = 'btn-table';
-    btnTable.addEventListener('click', function(e) {
-        e.preventDefault();
-        insertTable(textarea);
-    });
-    toolbar.appendChild(btnTable);
-
-    // Bouton prompt
-    var btnPrompt = document.createElement('button');
-    btnPrompt.type = 'button';
-    btnPrompt.innerHTML = '{ }';
-    btnPrompt.title = 'Bloc prompt';
-    btnPrompt.className = 'btn-prompt';
-    btnPrompt.addEventListener('click', function(e) {
-        e.preventDefault();
-        insertPrompt(textarea);
-    });
-    toolbar.appendChild(btnPrompt);
-
-    // Aide
-    var help = document.createElement('span');
-    help.className = 'help-icon';
-    help.innerHTML = '?';
-    help.title = 'Sélectionnez du texte puis cliquez sur un bouton pour le formater';
-    toolbar.appendChild(help);
-
-    // Insérer la barre avant le textarea
-    textarea.parentNode.insertBefore(toolbar, textarea);
-    textarea.classList.add('textarea-with-toolbar');
 }
 
 /**
