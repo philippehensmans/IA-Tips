@@ -89,3 +89,28 @@ function escapeForForm(?string $html): string {
     }
     return htmlspecialchars($html, ENT_QUOTES, 'UTF-8');
 }
+
+/**
+ * Extrait un aperçu texte d'un contenu HTML pour l'affichage en liste
+ * Supprime les balises et décode les entités HTML
+ *
+ * @param string $html Le HTML à traiter
+ * @param int $maxLength Longueur maximale du texte
+ * @return string Le texte tronqué et sécurisé
+ */
+function getTextPreview(?string $html, int $maxLength = 120): string {
+    if (empty($html)) {
+        return '';
+    }
+
+    // Décoder les entités HTML, supprimer les balises, puis tronquer
+    $text = html_entity_decode($html, ENT_QUOTES, 'UTF-8');
+    $text = strip_tags($text);
+    $text = preg_replace('/\s+/', ' ', trim($text)); // Normaliser les espaces
+
+    if (mb_strlen($text) > $maxLength) {
+        $text = mb_substr($text, 0, $maxLength) . '...';
+    }
+
+    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+}
