@@ -22,7 +22,47 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialiser TinyMCE pour les textareas avec data-formatting="true"
     initTinyMCE();
+
+    // Menu hamburger pour mobile
+    initMobileMenu();
 });
+
+/**
+ * Initialise le menu mobile (hamburger)
+ */
+function initMobileMenu() {
+    var menuToggle = document.getElementById('menuToggle');
+    var sidebar = document.getElementById('sidebar');
+
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            // Changer l'icône
+            this.textContent = sidebar.classList.contains('active') ? '✕' : '☰';
+        });
+
+        // Fermer le menu quand on clique sur un lien
+        sidebar.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('active');
+                    menuToggle.textContent = '☰';
+                }
+            });
+        });
+
+        // Fermer le menu quand on clique en dehors
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768 &&
+                sidebar.classList.contains('active') &&
+                !sidebar.contains(e.target) &&
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+                menuToggle.textContent = '☰';
+            }
+        });
+    }
+}
 
 /**
  * Initialise TinyMCE pour les textareas avec data-formatting="true"

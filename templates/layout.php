@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? SITE_NAME) ?></title>
-    <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=7">
+    <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=8">
     <link rel="icon" href="<?= url('assets/images/favicon.ico') ?>" type="image/x-icon">
     <!-- TinyMCE -->
     <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
@@ -49,17 +49,20 @@
     </header>
 
     <nav class="wiki-nav">
-        <a href="<?= url() ?>">Accueil</a>
-        <a href="<?= url('articles.php?type=article') ?>">Articles</a>
-        <a href="<?= url('articles.php?type=prompt') ?>">Prompts</a>
-        <a href="<?= url('categories.php') ?>">Catégories</a>
-        <?php if ($isLoggedIn): ?>
-            <a href="<?= url('import.php') ?>">Importer</a>
-        <?php endif; ?>
+        <div class="wiki-nav-inner">
+            <button class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
+            <a href="<?= url() ?>">Accueil</a>
+            <a href="<?= url('articles.php?type=article') ?>">Articles</a>
+            <a href="<?= url('articles.php?type=prompt') ?>">Prompts</a>
+            <a href="<?= url('categories.php') ?>">Catégories</a>
+            <?php if ($isLoggedIn): ?>
+                <a href="<?= url('import.php') ?>">Importer</a>
+            <?php endif; ?>
+        </div>
     </nav>
 
     <div class="wiki-container">
-        <aside class="wiki-sidebar">
+        <aside class="wiki-sidebar" id="sidebar">
             <div class="sidebar-section">
                 <h3>Navigation</h3>
                 <ul>
@@ -145,6 +148,6 @@
         <p>Les analyses sont générées avec l'aide de l'IA et doivent être vérifiées.</p>
     </footer>
 
-    <script src="<?= url('assets/js/app.js') ?>?v=6"></script>
+    <script src="<?= url('assets/js/app.js') ?>?v=8"></script>
 </body>
 </html>
