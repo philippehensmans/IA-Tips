@@ -45,8 +45,11 @@ $articleUrl .= url('article.php?slug=' . urlencode($article['slug']));
 // Message WhatsApp
 $whatsappText = ($isPrompt ? "💬 " : "📄 ") . $article['title'] . "\n\n";
 if (!empty($article['summary'])) {
-    $summaryShort = mb_substr($article['summary'], 0, 150);
-    if (mb_strlen($article['summary']) > 150) {
+    // Nettoyer le HTML pour WhatsApp (supprimer balises et décoder entités)
+    $summaryClean = html_entity_decode(strip_tags($article['summary']), ENT_QUOTES, 'UTF-8');
+    $summaryClean = preg_replace('/\s+/', ' ', trim($summaryClean)); // Normaliser espaces
+    $summaryShort = mb_substr($summaryClean, 0, 150);
+    if (mb_strlen($summaryClean) > 150) {
         $summaryShort .= '...';
     }
     $whatsappText .= $summaryShort . "\n\n";
