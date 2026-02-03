@@ -46,17 +46,18 @@ function filterBasicHtml(?string $html): string {
         return '<img src="' . $src . '" alt="' . $alt . '" style="max-width:100%;height:auto;">';
     }, $filtered);
 
-    // Sécuriser les liens: n'autoriser que href et target
-    $filtered = preg_replace_callback('/<a[^>]*>(.*?)<\/a>/is', function($matches) {
-        $tag = $matches[0];
-        $content = $matches[1];
-        $href = '';
+    // Sécuriser les liens: n'autoriser que href
+    $filtered = preg_replace_callback('/<a\s+([^>]*)>([\s\S]*?)<\/a>/i', function($matches) {
+        $attributes = $matches[1];
+        $content = $matches[2];
 
         // Extraire href
-        if (preg_match('/href=["\']([^"\']+)["\']/i', $tag, $hrefMatch)) {
+        if (preg_match('/href\s*=\s*["\']([^"\']+)["\']/i', $attributes, $hrefMatch)) {
             $href = $hrefMatch[1];
-            // N'autoriser que les URLs http(s) et les ancres
-            if (!preg_match('/^(https?:\/\/|#|mailto:)/', $href)) {
+            // Décoder les entités HTML dans l'URL
+            $href = html_entity_decode($href, ENT_QUOTES, 'UTF-8');
+            // N'autoriser que les URLs http(s), les ancres et mailto
+            if (!preg_match('/^(https?:\/\/|#|mailto:)/i', $href)) {
                 return $content; // Retourner le texte sans lien
             }
             $href = htmlspecialchars($href, ENT_QUOTES, 'UTF-8');
