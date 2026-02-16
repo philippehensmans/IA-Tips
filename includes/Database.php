@@ -178,5 +178,14 @@ class Database {
         if (!in_array('type', $columnNames)) {
             $this->pdo->exec("ALTER TABLE categories ADD COLUMN type TEXT DEFAULT 'article'");
         }
+
+        // Ajouter la colonne is_favorite à la table articles
+        $stmt = $this->pdo->query("PRAGMA table_info(articles)");
+        $columns = $stmt->fetchAll();
+        $columnNames = array_column($columns, 'name');
+
+        if (!in_array('is_favorite', $columnNames)) {
+            $this->pdo->exec("ALTER TABLE articles ADD COLUMN is_favorite INTEGER DEFAULT 0");
+        }
     }
 }

@@ -160,6 +160,48 @@ class Article {
     }
 
     /**
+     * Basculer le statut favori d'un article
+     */
+    public function toggleFavorite(int $id): bool {
+        $stmt = $this->db->prepare("UPDATE articles SET is_favorite = CASE WHEN is_favorite = 1 THEN 0 ELSE 1 END WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        $article = $this->getById($id);
+        return $article ? (bool)$article['is_favorite'] : false;
+    }
+
+    /**
+     * Récupérer tous les favoris
+     */
+    public function getFavorites(int $limit = 50, int $offset = 0, string $type = null): array {
+        $sql = "SELECT * FROM articles WHERE is_favorite = 1";
+        $params = [];
+
+        if ($type) {
+            $sql .= " AND type = :type";
+            $params['type'] = $type;
+        }
+
+        $sql .= " ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+
+        $stmt->execute();
+        $articles = $stmt->fetchAll();
+
+        foreach ($articles as &$article) {
+            $article['categories'] = $this->getCategories($article['id']);
+        }
+
+        return $articles;
+    }
+
+    /**
      * Rechercher des articles
      */
     public function search(string $query): array {
