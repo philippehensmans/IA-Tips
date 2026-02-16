@@ -384,3 +384,26 @@ async function analyzeContent(content, sourceUrl = '') {
         source_url: sourceUrl
     });
 }
+
+/**
+ * Basculer le statut favori d'un article
+ */
+function toggleFavorite(articleId, btn) {
+    var apiUrl = window.APP_CONFIG ? window.APP_CONFIG.apiUrl : '/api/index.php?action=';
+    fetch(apiUrl + 'articles/' + articleId + '/favorite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        if (data.success) {
+            var isFav = data.is_favorite;
+            btn.classList.toggle('active', isFav);
+            btn.innerHTML = isFav ? '&#9733;' : '&#9734;';
+            btn.title = isFav ? 'Retirer des favoris' : 'Ajouter aux favoris';
+        }
+    })
+    .catch(function(err) {
+        console.error('Erreur toggle favori:', err);
+    });
+}

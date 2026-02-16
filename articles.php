@@ -6,18 +6,23 @@ require_once __DIR__ . '/config.php';
 
 $status = $_GET['status'] ?? null;
 $type = $_GET['type'] ?? null;
+$favorites = $_GET['favorites'] ?? null;
 
 $typeLabel = $type === 'prompt' ? 'Prompts' : ($type === 'article' ? 'Articles' : 'Tous les contenus');
-$pageTitle = $typeLabel . ($status === 'draft' ? ' - Brouillons' : '') . ' - ' . SITE_NAME;
+$pageTitle = ($favorites ? 'Favoris - ' : '') . $typeLabel . ($status === 'draft' ? ' - Brouillons' : '') . ' - ' . SITE_NAME;
 
 $articleModel = new Article();
-$articles = $articleModel->getAll($status, 50, 0, $type);
+if ($favorites) {
+    $articles = $articleModel->getFavorites(50, 0, $type);
+} else {
+    $articles = $articleModel->getAll($status, 50, 0, $type);
+}
 
 ob_start();
 ?>
 
 <div class="article-header">
-    <h1><?= $status === 'draft' ? 'Brouillons - ' : '' ?><?= $typeLabel ?></h1>
+    <h1><?= $favorites ? 'Favoris - ' : '' ?><?= $status === 'draft' ? 'Brouillons - ' : '' ?><?= $typeLabel ?></h1>
 </div>
 
 <div class="article-section">
@@ -33,6 +38,9 @@ ob_start();
             <a href="<?= url('articles.php' . ($type ? '?type=' . $type : '')) ?>" class="btn <?= !$status ? 'btn-primary' : '' ?>">Tous</a>
             <a href="<?= url('articles.php?status=published' . ($type ? '&type=' . $type : '')) ?>" class="btn <?= $status === 'published' ? 'btn-primary' : '' ?>">Publiés</a>
             <a href="<?= url('articles.php?status=draft' . ($type ? '&type=' . $type : '')) ?>" class="btn <?= $status === 'draft' ? 'btn-primary' : '' ?>">Brouillons</a>
+        </div>
+        <div class="filter-group">
+            <a href="<?= url('articles.php?favorites=1' . ($type ? '&type=' . $type : '')) ?>" class="btn <?= $favorites ? 'btn-primary' : '' ?>" title="Afficher les favoris">&#9733; Favoris</a>
         </div>
         <div class="filter-group">
             <a href="<?= url('new.php?type=article') ?>" class="btn btn-success">+ Article</a>
@@ -55,6 +63,7 @@ ob_start();
             <?php $isPrompt = ($article['type'] ?? 'article') === 'prompt'; ?>
             <li class="article-list-item">
                 <h3>
+                    <button class="favorite-btn favorite-btn-small<?= !empty($article['is_favorite']) ? ' active' : '' ?>" onclick="toggleFavorite(<?= $article['id'] ?>, this)" title="<?= !empty($article['is_favorite']) ? 'Retirer des favoris' : 'Ajouter aux favoris' ?>"><?= !empty($article['is_favorite']) ? '&#9733;' : '&#9734;' ?></button>
                     <span class="type-badge type-<?= $isPrompt ? 'prompt' : 'article' ?>"><?= $isPrompt ? 'Prompt' : 'Article' ?></span>
                     <a href="<?= url('article.php?slug=' . htmlspecialchars($article['slug'])) ?>"><?= htmlspecialchars($article['title']) ?></a>
                     <span class="status-badge status-<?= $article['status'] ?>"><?= $article['status'] === 'published' ? 'Publié' : 'Brouillon' ?></span>

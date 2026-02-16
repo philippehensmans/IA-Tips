@@ -80,6 +80,7 @@ ob_start();
         <a href="#" onclick="confirmDelete(<?= $article['id'] ?>); return false;">Supprimer</a>
     </div>
     <h1>
+        <button class="favorite-btn<?= !empty($article['is_favorite']) ? ' active' : '' ?>" onclick="toggleFavorite(<?= $article['id'] ?>, this)" title="<?= !empty($article['is_favorite']) ? 'Retirer des favoris' : 'Ajouter aux favoris' ?>"><?= !empty($article['is_favorite']) ? '&#9733;' : '&#9734;' ?></button>
         <span class="type-badge type-<?= $isPrompt ? 'prompt' : 'article' ?>"><?= $isPrompt ? 'Prompt' : 'Article' ?></span>
         <?= htmlspecialchars($article['title']) ?>
     </h1>
@@ -129,7 +130,7 @@ ob_start();
 <?php if ($article['summary']): ?>
 <div class="article-section">
     <h2><?= $isPrompt ? 'Description' : 'Résumé' ?></h2>
-    <div class="summary-content"><?= filterBasicHtml($article['summary']) ?></div>
+    <div class="summary-content"><?= filterBasicHtml(formatSummaryForDisplay($article['summary'])) ?></div>
 </div>
 <?php endif; ?>
 

@@ -62,10 +62,10 @@ function handleRequest(string $method, array $segments, array $input): array {
 
     switch ($resource) {
         case 'articles':
-            return handleArticles($method, $id, $input);
+            return handleArticles($method, $id, $input, $segments);
 
         case 'categories':
-            return handleCategories($method, $id);
+            return handleCategories($method, $id, $input);
 
         case 'analyze':
             return handleAnalyze($method, $input);
@@ -82,8 +82,15 @@ function handleRequest(string $method, array $segments, array $input): array {
 /**
  * Gérer les articles/prompts
  */
-function handleArticles(string $method, ?string $id, array $input): array {
+function handleArticles(string $method, ?string $id, array $input, array $segments = []): array {
     $article = new Article();
+
+    // Gérer /articles/{id}/favorite
+    $action = $segments[2] ?? null;
+    if ($id && $action === 'favorite' && $method === 'POST') {
+        $isFavorite = $article->toggleFavorite((int)$id);
+        return ['success' => true, 'is_favorite' => $isFavorite];
+    }
 
     switch ($method) {
         case 'GET':
@@ -99,9 +106,12 @@ function handleArticles(string $method, ?string $id, array $input): array {
             $status = $_GET['status'] ?? null;
             $type = $_GET['type'] ?? null;
             $search = $_GET['search'] ?? null;
+            $favorites = $_GET['favorites'] ?? null;
 
             if ($search) {
                 $results = $article->search($search);
+            } elseif ($favorites) {
+                $results = $article->getFavorites(50, 0, $type);
             } else {
                 $results = $article->getAll($status, 50, 0, $type);
             }
@@ -155,27 +165,61 @@ function handleArticles(string $method, ?string $id, array $input): array {
 /**
  * Gérer les catégories
  */
-function handleCategories(string $method, ?string $id): array {
-    if ($method !== 'GET') {
-        http_response_code(405);
-        return ['error' => true, 'message' => 'Méthode non autorisée'];
-    }
-
+function handleCategories(string $method, ?string $id, array $input = []): array {
     $category = new Category();
     $type = $_GET['type'] ?? null;
 
-    if ($id) {
-        $result = is_numeric($id) ? $category->getById((int)$id) : $category->getBySlug($id);
-        if (!$result) {
-            http_response_code(404);
-            return ['error' => true, 'message' => 'Catégorie non trouvée'];
-        }
+    switch ($method) {
+        case 'GET':
+            if ($id) {
+                $result = is_numeric($id) ? $category->getById((int)$id) : $category->getBySlug($id);
+                if (!$result) {
+                    http_response_code(404);
+                    return ['error' => true, 'message' => 'Catégorie non trouvée'];
+                }
 
-        $result['articles'] = $category->getArticles($result['id']);
-        return ['success' => true, 'data' => $result];
+                $result['articles'] = $category->getArticles($result['id']);
+                return ['success' => true, 'data' => $result];
+            }
+
+            return ['success' => true, 'data' => $category->getAll($type)];
+
+        case 'POST':
+            if (empty($input['name'])) {
+                http_response_code(400);
+                return ['error' => true, 'message' => 'Le nom est requis'];
+            }
+            $catId = $category->create($input);
+            $newCat = $category->getById($catId);
+            http_response_code(201);
+            return ['success' => true, 'data' => $newCat];
+
+        case 'PUT':
+            if (!$id) {
+                http_response_code(400);
+                return ['error' => true, 'message' => 'ID requis'];
+            }
+            $existing = $category->getById((int)$id);
+            if (!$existing) {
+                http_response_code(404);
+                return ['error' => true, 'message' => 'Catégorie non trouvée'];
+            }
+            $category->update((int)$id, $input);
+            $updated = $category->getById((int)$id);
+            return ['success' => true, 'data' => $updated];
+
+        case 'DELETE':
+            if (!$id) {
+                http_response_code(400);
+                return ['error' => true, 'message' => 'ID requis'];
+            }
+            $category->delete((int)$id);
+            return ['success' => true, 'message' => 'Catégorie supprimée'];
+
+        default:
+            http_response_code(405);
+            return ['error' => true, 'message' => 'Méthode non autorisée'];
     }
-
-    return ['success' => true, 'data' => $category->getAll($type)];
 }
 
 /**

@@ -81,7 +81,7 @@ Reponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans ```json) conte
 
 {
     "title": "Titre propose pour l'article (concis et informatif)",
-    "summary": "Resume detaille et approfondi du contenu en environ 500 mots (4-6 paragraphes). Expliquer en profondeur le sujet, les concepts cles, le contexte, les implications pratiques et les perspectives futures. Le resume doit etre suffisamment complet pour permettre de comprendre tous les aspects importants de l'article sans avoir besoin de lire l'original.",
+    "summary": "Resume detaille et approfondi du contenu en environ 500 mots (4-6 paragraphes). Chaque paragraphe doit etre separe par \\n\\n (double saut de ligne). Expliquer en profondeur le sujet, les concepts cles, le contexte, les implications pratiques et les perspectives futures. Le resume doit etre suffisamment complet pour permettre de comprendre tous les aspects importants de l'article sans avoir besoin de lire l'original.",
     "main_points": [
         "Point cle 1 - aspect important du contenu",
         "Point cle 2 - concept ou technique explique",
@@ -230,10 +230,13 @@ ANALYSIS_TEXT;
         // Formater l'analyse en HTML
         $analysisHtml = $this->formatArticleAnalysis($data['analysis'] ?? []);
 
+        // Formater le résumé en paragraphes HTML
+        $summary = $this->formatSummaryParagraphs($data['summary'] ?? '');
+
         return [
             'type' => 'article',
             'title' => $data['title'] ?? 'Sans titre',
-            'summary' => $data['summary'] ?? '',
+            'summary' => $summary,
             'main_points' => $mainPointsHtml,
             'main_points_raw' => $data['main_points'] ?? [],
             'analysis' => $analysisHtml,
@@ -272,10 +275,13 @@ ANALYSIS_TEXT;
         // Formater l'analyse du prompt en HTML
         $analysisHtml = $this->formatPromptAnalysis($data['analysis'] ?? []);
 
+        // Formater la description en paragraphes HTML
+        $summary = $this->formatSummaryParagraphs($data['summary'] ?? '');
+
         return [
             'type' => 'prompt',
             'title' => $data['title'] ?? 'Sans titre',
-            'summary' => $data['summary'] ?? '',
+            'summary' => $summary,
             'main_points' => $mainPointsHtml,
             'main_points_raw' => $data['main_points'] ?? [],
             'formatted_prompt' => $data['formatted_prompt'] ?? '',
@@ -283,6 +289,47 @@ ANALYSIS_TEXT;
             'analysis_raw' => $data['analysis'] ?? [],
             'suggested_categories' => $data['suggested_categories'] ?? []
         ];
+    }
+
+    /**
+     * Formater un résumé en paragraphes HTML
+     * Convertit les doubles sauts de ligne en balises <p>
+     */
+    private function formatSummaryParagraphs(string $summary): string {
+        if (empty($summary)) return '';
+
+        // Si le résumé contient déjà des balises <p>, le retourner tel quel
+        if (stripos($summary, '<p>') !== false) {
+            return $summary;
+        }
+
+        // Séparer par doubles sauts de ligne
+        $paragraphs = preg_split('/\n\s*\n/', trim($summary));
+
+        if (count($paragraphs) <= 1) {
+            // Si pas de doubles sauts de ligne, essayer avec des simples sauts de ligne
+            // uniquement si le texte est assez long (plus de 200 caractères)
+            if (strlen($summary) > 200 && substr_count($summary, "\n") > 0) {
+                $paragraphs = explode("\n", trim($summary));
+                $paragraphs = array_filter($paragraphs, function($p) {
+                    return trim($p) !== '';
+                });
+            }
+        }
+
+        if (count($paragraphs) <= 1) {
+            return '<p>' . htmlspecialchars($summary) . '</p>';
+        }
+
+        $html = '';
+        foreach ($paragraphs as $paragraph) {
+            $paragraph = trim($paragraph);
+            if (!empty($paragraph)) {
+                $html .= '<p>' . htmlspecialchars($paragraph) . '</p>' . "\n";
+            }
+        }
+
+        return $html;
     }
 
     /**

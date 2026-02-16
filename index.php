@@ -78,7 +78,7 @@ ob_start();
             <ul class="content-list">
                 <?php foreach ($recentArticles as $article): ?>
                     <li class="content-list-item">
-                        <h3><a href="<?= url('article.php?slug=' . htmlspecialchars($article['slug'])) ?>"><?= htmlspecialchars($article['title']) ?></a></h3>
+                        <h3><button class="favorite-btn favorite-btn-small<?= !empty($article['is_favorite']) ? ' active' : '' ?>" onclick="toggleFavorite(<?= $article['id'] ?>, this)" title="Favori"><?= !empty($article['is_favorite']) ? '&#9733;' : '&#9734;' ?></button> <a href="<?= url('article.php?slug=' . htmlspecialchars($article['slug'])) ?>"><?= htmlspecialchars($article['title']) ?></a></h3>
                         <?php if ($article['summary']): ?>
                             <p class="summary"><?= getTextPreview($article['summary'], 120) ?></p>
                         <?php endif; ?>
@@ -125,7 +125,7 @@ ob_start();
             <ul class="content-list">
                 <?php foreach ($recentPrompts as $prompt): ?>
                     <li class="content-list-item prompt-item">
-                        <h3><a href="<?= url('article.php?slug=' . htmlspecialchars($prompt['slug'])) ?>"><?= htmlspecialchars($prompt['title']) ?></a></h3>
+                        <h3><button class="favorite-btn favorite-btn-small<?= !empty($prompt['is_favorite']) ? ' active' : '' ?>" onclick="toggleFavorite(<?= $prompt['id'] ?>, this)" title="Favori"><?= !empty($prompt['is_favorite']) ? '&#9733;' : '&#9734;' ?></button> <a href="<?= url('article.php?slug=' . htmlspecialchars($prompt['slug'])) ?>"><?= htmlspecialchars($prompt['title']) ?></a></h3>
                         <?php if ($prompt['summary']): ?>
                             <p class="summary"><?= getTextPreview($prompt['summary'], 120) ?></p>
                         <?php endif; ?>

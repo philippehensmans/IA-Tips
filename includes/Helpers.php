@@ -91,6 +91,51 @@ function escapeForForm(?string $html): string {
 }
 
 /**
+ * Formate un résumé pour l'affichage avec des paragraphes HTML
+ * Si le texte ne contient pas de balises <p>, convertit les doubles sauts de ligne en paragraphes
+ *
+ * @param string $summary Le résumé à formater
+ * @return string Le résumé formaté en HTML avec des paragraphes
+ */
+function formatSummaryForDisplay(?string $summary): string {
+    if (empty($summary)) {
+        return '';
+    }
+
+    // Si le résumé contient déjà des balises <p>, le retourner tel quel
+    if (stripos($summary, '<p>') !== false) {
+        return $summary;
+    }
+
+    // Séparer par doubles sauts de ligne
+    $paragraphs = preg_split('/\n\s*\n/', trim($summary));
+
+    if (count($paragraphs) <= 1) {
+        // Essayer avec des simples sauts de ligne si le texte est assez long
+        if (strlen($summary) > 200 && substr_count($summary, "\n") > 0) {
+            $paragraphs = explode("\n", trim($summary));
+            $paragraphs = array_filter($paragraphs, function($p) {
+                return trim($p) !== '';
+            });
+        }
+    }
+
+    if (count($paragraphs) <= 1) {
+        return '<p>' . $summary . '</p>';
+    }
+
+    $html = '';
+    foreach ($paragraphs as $paragraph) {
+        $paragraph = trim($paragraph);
+        if (!empty($paragraph)) {
+            $html .= '<p>' . $paragraph . '</p>' . "\n";
+        }
+    }
+
+    return $html;
+}
+
+/**
  * Extrait un aperçu texte d'un contenu HTML pour l'affichage en liste
  * Supprime les balises et décode les entités HTML
  *

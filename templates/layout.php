@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? SITE_NAME) ?></title>
-    <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=8">
+    <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>?v=9">
     <link rel="icon" href="<?= url('assets/images/favicon.ico') ?>" type="image/x-icon">
     <!-- TinyMCE -->
     <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
@@ -12,7 +12,8 @@
         // Configuration globale pour JavaScript
         window.APP_CONFIG = {
             basePath: '<?= BASE_PATH ?>',
-            uploadUrl: '<?= url('api/upload.php') ?>'
+            uploadUrl: '<?= url('api/upload.php') ?>',
+            apiUrl: '<?= url('api/index.php?action=') ?>'
         };
     </script>
 </head>
@@ -70,6 +71,7 @@
                     <li><a href="<?= url('articles.php') ?>">Tous les contenus</a></li>
                     <li><a href="<?= url('articles.php?type=article') ?>">Articles</a></li>
                     <li><a href="<?= url('articles.php?type=prompt') ?>">Prompts</a></li>
+                    <li><a href="<?= url('articles.php?favorites=1') ?>" class="sidebar-favorites">&#9733; Favoris</a></li>
                     <?php if ($isLoggedIn): ?>
                         <li><a href="<?= url('articles.php?status=draft') ?>">Brouillons</a></li>
                     <?php endif; ?>
@@ -114,6 +116,7 @@
             <div class="sidebar-section">
                 <h3>Outils</h3>
                 <ul>
+                    <li><a href="<?= url('manage-categories.php') ?>">Gérer les catégories</a></li>
                     <li><a href="<?= url('api/index.php?action=health') ?>" target="_blank">État de l'API</a></li>
                     <?php if ($auth->isAdmin()): ?>
                         <li><a href="<?= url('users.php') ?>">Gérer les utilisateurs</a></li>
@@ -148,6 +151,6 @@
         <p>Les analyses sont générées avec l'aide de l'IA et doivent être vérifiées.</p>
     </footer>
 
-    <script src="<?= url('assets/js/app.js') ?>?v=8"></script>
+    <script src="<?= url('assets/js/app.js') ?>?v=9"></script>
 </body>
 </html>
