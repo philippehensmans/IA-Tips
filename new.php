@@ -4,9 +4,9 @@
  */
 require_once __DIR__ . '/config.php';
 
-// Authentification requise
+// Rôle encodeur, éditeur ou admin requis
 $auth = new Auth();
-$auth->requireLogin();
+$auth->requireEncoder();
 
 // Déterminer le type depuis le paramètre GET ou POST
 $type = $_GET['type'] ?? $_POST['type'] ?? 'article';

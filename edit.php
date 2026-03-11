@@ -4,9 +4,9 @@
  */
 require_once __DIR__ . '/config.php';
 
-// Authentification requise
+// Rôle éditeur ou admin requis pour modifier
 $auth = new Auth();
-$auth->requireLogin();
+$auth->requireEditor();
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) {

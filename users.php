@@ -19,7 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = trim($_POST['username'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
-        $role = $_POST['role'] ?? 'editor';
+        $role = $_POST['role'] ?? 'encodeur';
+        $allowedRoles = ['encodeur', 'editor', 'admin'];
+        if (!in_array($role, $allowedRoles)) {
+            $role = 'encodeur';
+        }
 
         if (empty($username) || empty($email) || empty($password)) {
             $alert = ['type' => 'error', 'message' => 'Tous les champs sont requis.'];
@@ -41,6 +45,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $alert = ['type' => 'error', 'message' => 'Impossible de supprimer cet utilisateur.'];
             }
+        }
+    } elseif ($action === 'change_role') {
+        $userId = (int)($_POST['user_id'] ?? 0);
+        $newRole = $_POST['new_role'] ?? '';
+
+        if ($userId && $userId !== $_SESSION['user_id']) {
+            if ($auth->changeRole($userId, $newRole)) {
+                $alert = ['type' => 'success', 'message' => 'Rôle modifié avec succès.'];
+            } else {
+                $alert = ['type' => 'error', 'message' => 'Impossible de modifier le rôle (dernier administrateur ?).'];
+            }
+        } else {
+            $alert = ['type' => 'error', 'message' => 'Vous ne pouvez pas modifier votre propre rôle.'];
         }
     } elseif ($action === 'change_password') {
         $userId = (int)($_POST['user_id'] ?? 0);
@@ -89,8 +106,21 @@ ob_start();
                     <td style="padding: 10px;"><?= htmlspecialchars($user['username']) ?></td>
                     <td style="padding: 10px;"><?= htmlspecialchars($user['email']) ?></td>
                     <td style="padding: 10px;">
-                        <span class="status-badge status-<?= $user['role'] === 'admin' ? 'published' : 'draft' ?>">
-                            <?= htmlspecialchars($user['role']) ?>
+                        <?php
+                        $roleBadgeClass = match($user['role']) {
+                            'admin' => 'published',
+                            'editor' => 'draft',
+                            default => 'draft',
+                        };
+                        $roleLabel = match($user['role']) {
+                            'admin' => 'Administrateur',
+                            'editor' => 'Éditeur',
+                            'encodeur' => 'Encodeur',
+                            default => htmlspecialchars($user['role']),
+                        };
+                        ?>
+                        <span class="status-badge status-<?= $roleBadgeClass ?>">
+                            <?= $roleLabel ?>
                         </span>
                     </td>
                     <td style="padding: 10px;">
@@ -98,6 +128,16 @@ ob_start();
                     </td>
                     <td style="padding: 10px;">
                         <?php if ($user['id'] !== $_SESSION['user_id']): ?>
+                            <form method="post" style="display: inline; margin-right: 5px;">
+                                <input type="hidden" name="action" value="change_role">
+                                <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                <select name="new_role" style="padding: 3px; font-size: 12px;" onchange="this.form.submit()">
+                                    <option value="" disabled selected>Changer rôle...</option>
+                                    <option value="encodeur" <?= $user['role'] === 'encodeur' ? 'disabled' : '' ?>>Encodeur</option>
+                                    <option value="editor" <?= $user['role'] === 'editor' ? 'disabled' : '' ?>>Éditeur</option>
+                                    <option value="admin" <?= $user['role'] === 'admin' ? 'disabled' : '' ?>>Admin</option>
+                                </select>
+                            </form>
                             <form method="post" style="display: inline;" onsubmit="return confirm('Supprimer cet utilisateur ?');">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
@@ -138,8 +178,9 @@ ob_start();
             <div class="form-group">
                 <label for="role">Rôle</label>
                 <select id="role" name="role">
-                    <option value="editor">Éditeur</option>
-                    <option value="admin">Administrateur</option>
+                    <option value="encodeur">Encodeur (peut créer du contenu)</option>
+                    <option value="editor">Éditeur (peut créer et modifier)</option>
+                    <option value="admin">Administrateur (accès complet)</option>
                 </select>
             </div>
 
