@@ -24,9 +24,9 @@ set_error_handler(function($severity, $message, $file, $line) {
 try {
     require_once __DIR__ . '/config.php';
 
-    // Authentification requise
+    // Rôle encodeur, éditeur ou admin requis
     $auth = new Auth();
-    $auth->requireLogin();
+    $auth->requireEncoder();
 
     $pageTitle = 'Importer du contenu - ' . SITE_NAME;
 

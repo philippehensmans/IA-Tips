@@ -111,7 +111,15 @@ ob_start();
 
             <div class="form-group">
                 <label>Rôle</label>
-                <input type="text" disabled value="<?= htmlspecialchars($currentUser['role']) ?>"
+                <?php
+                $profileRoleLabel = match($currentUser['role']) {
+                    'admin' => 'Administrateur',
+                    'editor' => 'Éditeur',
+                    'encodeur' => 'Encodeur',
+                    default => htmlspecialchars($currentUser['role']),
+                };
+                ?>
+                <input type="text" disabled value="<?= $profileRoleLabel ?>"
                        style="background: #f6f6f6;">
             </div>
 

@@ -56,7 +56,7 @@
             <a href="<?= url('articles.php?type=article') ?>">Articles</a>
             <a href="<?= url('articles.php?type=prompt') ?>">Prompts</a>
             <a href="<?= url('categories.php') ?>">Catégories</a>
-            <?php if ($isLoggedIn): ?>
+            <?php if ($isLoggedIn && $auth->canEncode()): ?>
                 <a href="<?= url('import.php') ?>">Importer</a>
             <?php endif; ?>
         </div>
@@ -78,7 +78,7 @@
                 </ul>
             </div>
 
-            <?php if ($isLoggedIn): ?>
+            <?php if ($isLoggedIn && $auth->canEncode()): ?>
             <div class="sidebar-section">
                 <h3>Créer</h3>
                 <ul>
@@ -112,7 +112,7 @@
                 </ul>
             </div>
 
-            <?php if ($isLoggedIn): ?>
+            <?php if ($isLoggedIn && $auth->isEditor()): ?>
             <div class="sidebar-section">
                 <h3>Outils</h3>
                 <ul>

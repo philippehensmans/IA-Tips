@@ -4,9 +4,9 @@
  */
 require_once __DIR__ . '/config.php';
 
-// Authentification requise
+// Rôle éditeur ou admin requis pour gérer les catégories
 $auth = new Auth();
-$auth->requireLogin();
+$auth->requireEditor();
 
 $pageTitle = 'Gérer les catégories - ' . SITE_NAME;
 

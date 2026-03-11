@@ -81,6 +81,20 @@ class Auth {
     }
 
     /**
+     * Vérifier si l'utilisateur est éditeur ou admin
+     */
+    public function isEditor(): bool {
+        return $this->isLoggedIn() && in_array($_SESSION['role'] ?? '', ['editor', 'admin']);
+    }
+
+    /**
+     * Vérifier si l'utilisateur peut encoder (encodeur, éditeur ou admin)
+     */
+    public function canEncode(): bool {
+        return $this->isLoggedIn() && in_array($_SESSION['role'] ?? '', ['encodeur', 'editor', 'admin']);
+    }
+
+    /**
      * Exiger une connexion (rediriger si non connecté)
      */
     public function requireLogin(): void {
@@ -103,6 +117,28 @@ class Auth {
     }
 
     /**
+     * Exiger le rôle éditeur ou admin
+     */
+    public function requireEditor(): void {
+        $this->requireLogin();
+        if (!$this->isEditor()) {
+            http_response_code(403);
+            die('Accès refusé - Rôle éditeur ou administrateur requis');
+        }
+    }
+
+    /**
+     * Exiger le droit d'encoder (encodeur, éditeur ou admin)
+     */
+    public function requireEncoder(): void {
+        $this->requireLogin();
+        if (!$this->canEncode()) {
+            http_response_code(403);
+            die('Accès refusé - Rôle encodeur, éditeur ou administrateur requis');
+        }
+    }
+
+    /**
      * Créer un nouvel utilisateur
      */
     public function createUser(string $username, string $email, string $password, string $role = 'editor'): int {
@@ -112,6 +148,34 @@ class Auth {
         $stmt->execute([$username, $email, $hash, $role]);
 
         return (int)$this->db->lastInsertId();
+    }
+
+    /**
+     * Changer le rôle d'un utilisateur
+     */
+    public function changeRole(int $userId, string $newRole): bool {
+        $allowedRoles = ['encodeur', 'editor', 'admin'];
+        if (!in_array($newRole, $allowedRoles)) {
+            return false;
+        }
+
+        // Ne pas rétrograder le dernier admin
+        if ($newRole !== 'admin') {
+            $stmt = $this->db->prepare("SELECT role FROM users WHERE id = ?");
+            $stmt->execute([$userId]);
+            $user = $stmt->fetch();
+
+            if ($user && $user['role'] === 'admin') {
+                $stmt = $this->db->query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
+                $adminCount = (int)$stmt->fetchColumn();
+                if ($adminCount <= 1) {
+                    return false;
+                }
+            }
+        }
+
+        $stmt = $this->db->prepare("UPDATE users SET role = ? WHERE id = ?");
+        return $stmt->execute([$newRole, $userId]);
     }
 
     /**

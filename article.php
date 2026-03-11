@@ -70,14 +70,19 @@ ob_start();
 </div>
 <?php endif; ?>
 
+<?php $articleAuth = new Auth(); ?>
 <div class="article-header">
     <div class="article-actions">
-        <a href="<?= url('edit.php?id=' . $article['id']) ?>">Modifier</a>
+        <?php if ($articleAuth->isEditor()): ?>
+            <a href="<?= url('edit.php?id=' . $article['id']) ?>">Modifier</a>
+        <?php endif; ?>
         <a href="<?= htmlspecialchars($whatsappUrl) ?>" class="btn-whatsapp" target="_blank" title="Partager sur WhatsApp">WhatsApp</a>
         <?php if ($blueskyConfigured && !$isPrompt): ?>
         <a href="<?= url('share-bluesky.php?id=' . $article['id']) ?>" class="btn-bluesky" title="Partager sur Bluesky">Bluesky</a>
         <?php endif; ?>
-        <a href="#" onclick="confirmDelete(<?= $article['id'] ?>); return false;">Supprimer</a>
+        <?php if ($articleAuth->isEditor()): ?>
+            <a href="#" onclick="confirmDelete(<?= $article['id'] ?>); return false;">Supprimer</a>
+        <?php endif; ?>
     </div>
     <h1>
         <button class="favorite-btn<?= !empty($article['is_favorite']) ? ' active' : '' ?>" onclick="toggleFavorite(<?= $article['id'] ?>, this)" title="<?= !empty($article['is_favorite']) ? 'Retirer des favoris' : 'Ajouter aux favoris' ?>"><?= !empty($article['is_favorite']) ? '&#9733;' : '&#9734;' ?></button>
