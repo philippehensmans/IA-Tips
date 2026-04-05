@@ -408,10 +408,12 @@ function performSuggestSearch(query) {
 
             resultsDiv.innerHTML = html;
 
-            // Afficher le bouton IA si admin et résultats trouvés
-            var aiAction = document.getElementById('suggestAIAction');
-            if (aiAction) {
-                aiAction.style.display = 'block';
+            // Activer le bouton IA si admin et résultats trouvés
+            var aiBtn = document.getElementById('suggestAIBtn');
+            if (aiBtn) {
+                aiBtn.disabled = false;
+                var aiHint = document.querySelector('.suggest-ai-hint');
+                if (aiHint) aiHint.textContent = 'Admin uniquement - consomme des tokens API';
                 // Réinitialiser le résultat IA précédent
                 var aiResult = document.getElementById('suggestAIResult');
                 if (aiResult) aiResult.style.display = 'none';

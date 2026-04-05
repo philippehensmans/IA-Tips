@@ -40,11 +40,11 @@ ob_start();
         </div>
     </form>
     <?php if ($isAdmin): ?>
-    <div id="suggestAIAction" class="suggest-ai-action" style="display:none;">
-        <button type="button" id="suggestAIBtn" class="suggest-ai-btn" onclick="requestAIAnswer()">
+    <div id="suggestAIAction" class="suggest-ai-action">
+        <button type="button" id="suggestAIBtn" class="suggest-ai-btn" onclick="requestAIAnswer()" disabled>
             &#129302; Réponse IA (Claude)
         </button>
-        <span class="suggest-ai-hint">Admin uniquement - consomme des tokens API</span>
+        <span class="suggest-ai-hint">Admin uniquement - lancez d'abord une recherche</span>
     </div>
     <div id="suggestAIResult" class="suggest-ai-result" style="display:none;"></div>
     <?php endif; ?>
