@@ -391,7 +391,7 @@ function performSuggestSearch(query) {
                 for (var i = 1; i < data.data.length; i++) {
                     var item = data.data[i];
                     var typeLabel = item.type === 'prompt' ? '💬 Prompt' : '📄 Article';
-                    var baseUrl = window.APP_CONFIG ? window.APP_CONFIG.baseUrl : '';
+                    var baseUrl = window.APP_CONFIG ? window.APP_CONFIG.basePath : '';
                     html += '<li class="suggest-list-item">';
                     html += '<a href="' + baseUrl + '/article.php?slug=' + encodeURIComponent(item.slug) + '">';
                     html += '<span class="suggest-type-badge suggest-type-' + item.type + '">' + typeLabel + '</span> ';
@@ -487,7 +487,7 @@ function requestAIAnswer() {
         if (data.recommended && data.recommended.length > 0) {
             html += '<div class="suggest-ai-recommended">';
             html += '<strong>Contenus recommandés :</strong> ';
-            var baseUrl = window.APP_CONFIG ? window.APP_CONFIG.baseUrl : '';
+            var baseUrl = window.APP_CONFIG ? window.APP_CONFIG.basePath : '';
             for (var j = 0; j < data.recommended.length; j++) {
                 var rec = data.recommended[j];
                 if (j > 0) html += ', ';
@@ -509,7 +509,7 @@ function requestAIAnswer() {
 
 function buildFeaturedSnippet(item, query) {
     var typeLabel = item.type === 'prompt' ? '💬 Prompt' : '📄 Article';
-    var baseUrl = window.APP_CONFIG ? window.APP_CONFIG.baseUrl : '';
+    var baseUrl = window.APP_CONFIG ? window.APP_CONFIG.basePath : '';
     var link = baseUrl + '/article.php?slug=' + encodeURIComponent(item.slug);
 
     var html = '<div class="suggest-featured">';
