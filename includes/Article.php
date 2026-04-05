@@ -217,6 +217,70 @@ class Article {
     }
 
     /**
+     * Recherche pertinente avec scoring pour les suggestions homepage
+     * Cherche dans les prompts et articles publiés, retourne les plus pertinents
+     */
+    public function searchRelevant(string $query, int $limit = 5): array {
+        $words = preg_split('/\s+/', trim($query));
+        $words = array_filter($words, function($w) { return mb_strlen($w) >= 2; });
+
+        if (empty($words)) {
+            return [];
+        }
+
+        // Construire les conditions de recherche avec scoring
+        $conditions = [];
+        $params = [];
+        $scoreExpr = [];
+        $i = 0;
+
+        foreach ($words as $word) {
+            $paramTitle = ":t$i";
+            $paramSummary = ":s$i";
+            $paramPoints = ":p$i";
+            $paramContent = ":c$i";
+            $paramPrompt = ":f$i";
+            $like = '%' . $word . '%';
+
+            $conditions[] = "(title LIKE $paramTitle OR summary LIKE $paramSummary OR main_points LIKE $paramPoints OR content LIKE $paramContent OR formatted_prompt LIKE $paramPrompt)";
+            $scoreExpr[] = "(CASE WHEN title LIKE $paramTitle THEN 10 ELSE 0 END + CASE WHEN summary LIKE $paramSummary THEN 5 ELSE 0 END + CASE WHEN main_points LIKE $paramPoints THEN 3 ELSE 0 END + CASE WHEN formatted_prompt LIKE $paramPrompt THEN 2 ELSE 0 END + CASE WHEN content LIKE $paramContent THEN 1 ELSE 0 END)";
+
+            $params["t$i"] = $like;
+            $params["s$i"] = $like;
+            $params["p$i"] = $like;
+            $params["c$i"] = $like;
+            $params["f$i"] = $like;
+            $i++;
+        }
+
+        $whereClause = implode(' AND ', $conditions);
+        $scoreClause = implode(' + ', $scoreExpr);
+
+        $sql = "SELECT *, ($scoreClause) AS relevance_score
+                FROM articles
+                WHERE status = 'published'
+                AND ($whereClause)
+                ORDER BY relevance_score DESC, created_at DESC
+                LIMIT :limit";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+
+        $stmt->execute();
+        $articles = $stmt->fetchAll();
+
+        foreach ($articles as &$article) {
+            $article['categories'] = $this->getCategories($article['id']);
+        }
+
+        return $articles;
+    }
+
+    /**
      * Générer un slug unique
      */
     private function generateSlug(string $title, ?int $excludeId = null): string {

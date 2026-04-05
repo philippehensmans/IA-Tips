@@ -67,6 +67,9 @@ function handleRequest(string $method, array $segments, array $input): array {
         case 'categories':
             return handleCategories($method, $id, $input);
 
+        case 'suggest':
+            return handleSuggest($method);
+
         case 'analyze':
             return handleAnalyze($method, $input);
 
@@ -220,6 +223,42 @@ function handleCategories(string $method, ?string $id, array $input = []): array
             http_response_code(405);
             return ['error' => true, 'message' => 'Méthode non autorisée'];
     }
+}
+
+/**
+ * Suggestions de réponses depuis la base de données (style Google Answer)
+ */
+function handleSuggest(string $method): array {
+    if ($method !== 'GET') {
+        http_response_code(405);
+        return ['error' => true, 'message' => 'Méthode non autorisée'];
+    }
+
+    $query = trim($_GET['q'] ?? '');
+    if (empty($query) || mb_strlen($query) < 2) {
+        return ['success' => true, 'data' => [], 'query' => $query];
+    }
+
+    $article = new Article();
+    $results = $article->searchRelevant($query, 5);
+
+    // Formater les résultats pour l'affichage structuré
+    $suggestions = [];
+    foreach ($results as $result) {
+        $suggestions[] = [
+            'id' => $result['id'],
+            'title' => $result['title'],
+            'slug' => $result['slug'],
+            'type' => $result['type'],
+            'summary' => $result['summary'],
+            'main_points' => $result['main_points'],
+            'categories' => array_map(function($c) { return $c['name']; }, $result['categories'] ?? []),
+            'score' => $result['relevance_score'] ?? 0,
+            'created_at' => $result['created_at']
+        ];
+    }
+
+    return ['success' => true, 'data' => $suggestions, 'query' => $query, 'count' => count($suggestions)];
 }
 
 /**
