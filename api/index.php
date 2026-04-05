@@ -70,6 +70,9 @@ function handleRequest(string $method, array $segments, array $input): array {
         case 'suggest':
             return handleSuggest($method);
 
+        case 'suggest-ai':
+            return handleSuggestAI($method);
+
         case 'analyze':
             return handleAnalyze($method, $input);
 
@@ -259,6 +262,73 @@ function handleSuggest(string $method): array {
     }
 
     return ['success' => true, 'data' => $suggestions, 'query' => $query, 'count' => count($suggestions)];
+}
+
+/**
+ * Réponse IA synthétique via Claude (admin uniquement)
+ */
+function handleSuggestAI(string $method): array {
+    if ($method !== 'POST') {
+        http_response_code(405);
+        return ['error' => true, 'message' => 'Méthode non autorisée'];
+    }
+
+    // Vérifier que l'utilisateur est admin
+    $auth = new Auth();
+    if (!$auth->isAdmin()) {
+        http_response_code(403);
+        return ['error' => true, 'message' => 'Accès réservé aux administrateurs'];
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true) ?? [];
+    $query = trim($input['query'] ?? '');
+
+    if (empty($query)) {
+        http_response_code(400);
+        return ['error' => true, 'message' => 'Question requise'];
+    }
+
+    // Récupérer les résultats de recherche
+    $article = new Article();
+    $results = $article->searchRelevant($query, 5);
+
+    if (empty($results)) {
+        return ['success' => true, 'data' => [
+            'answer' => 'Aucun contenu trouvé dans la base pour répondre à cette question.',
+            'key_points' => [],
+            'recommended_ids' => [],
+            'confidence' => 'basse'
+        ], 'results' => []];
+    }
+
+    // Appeler Claude pour synthétiser
+    $claude = new ClaudeService();
+    $synthesis = $claude->synthesizeAnswer($query, $results);
+
+    if (isset($synthesis['error'])) {
+        http_response_code(500);
+        return ['error' => true, 'message' => $synthesis['error']];
+    }
+
+    // Associer les résultats recommandés avec leurs données
+    $recommended = [];
+    foreach ($synthesis['recommended_ids'] ?? [] as $idx) {
+        $i = $idx - 1;
+        if (isset($results[$i])) {
+            $recommended[] = [
+                'title' => $results[$i]['title'],
+                'slug' => $results[$i]['slug'],
+                'type' => $results[$i]['type']
+            ];
+        }
+    }
+
+    return [
+        'success' => true,
+        'data' => $synthesis,
+        'recommended' => $recommended,
+        'query' => $query
+    ];
 }
 
 /**

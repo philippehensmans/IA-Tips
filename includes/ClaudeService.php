@@ -63,6 +63,67 @@ class ClaudeService {
     }
 
     /**
+     * Générer une réponse synthétique à une question à partir des résultats de recherche
+     */
+    public function synthesizeAnswer(string $query, array $results): array {
+        // Construire le contexte à partir des résultats
+        $context = '';
+        foreach ($results as $i => $result) {
+            $num = $i + 1;
+            $title = $result['title'] ?? '';
+            $summary = strip_tags($result['summary'] ?? '');
+            $points = strip_tags($result['main_points'] ?? '');
+            $type = $result['type'] === 'prompt' ? 'Prompt' : 'Article';
+            $context .= "--- Resultat $num ($type) ---\nTitre: $title\nResume: $summary\nPoints cles: $points\n\n";
+        }
+
+        $prompt = <<<SYNTH_TEXT
+Tu es un assistant expert en Intelligence Artificielle. Un utilisateur pose une question et tu dois y repondre de maniere structuree en te basant UNIQUEMENT sur les contenus fournis ci-dessous (prompts et articles de notre base de donnees).
+
+QUESTION DE L'UTILISATEUR:
+$query
+
+CONTENUS TROUVES DANS LA BASE:
+$context
+
+---
+
+Reponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans ```json) contenant cette structure:
+
+{
+    "answer": "Reponse synthetique et claire a la question (3-5 phrases). Integre les informations des differents resultats.",
+    "key_points": ["Point cle 1", "Point cle 2", "Point cle 3"],
+    "recommended_ids": [1, 2],
+    "confidence": "haute/moyenne/basse"
+}
+
+REGLES:
+- "recommended_ids" contient les numeros (1-based) des resultats les plus pertinents pour la question
+- Si les contenus ne permettent pas de repondre a la question, indique-le dans "answer" et mets "confidence" a "basse"
+- Reponds en francais
+- Sois concis et pratique
+SYNTH_TEXT;
+
+        $response = $this->callApi($prompt);
+
+        if (isset($response['error'])) {
+            return ['error' => $response['error']];
+        }
+
+        $text = trim($response['text']);
+        $text = preg_replace('/^```json\s*/', '', $text);
+        $text = preg_replace('/\s*```$/', '', $text);
+
+        $data = json_decode($text, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return ['error' => 'Erreur de parsing JSON: ' . json_last_error_msg()];
+        }
+
+        return $data;
+    }
+
+    /**
      * Construire le prompt d'analyse pour un article IA
      */
     private function buildArticleAnalysisPrompt(string $content, string $sourceUrl): string {
