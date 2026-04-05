@@ -74,16 +74,22 @@ class ClaudeService {
             $summary = strip_tags($result['summary'] ?? '');
             $points = strip_tags($result['main_points'] ?? '');
             $type = $result['type'] === 'prompt' ? 'Prompt' : 'Article';
-            $context .= "--- Resultat $num ($type) ---\nTitre: $title\nResume: $summary\nPoints cles: $points\n\n";
+            $promptContent = '';
+            if (!empty($result['formatted_prompt'])) {
+                $promptContent = "\nPrompt formate: " . strip_tags($result['formatted_prompt']);
+            }
+            $context .= "--- Resultat $num ($type) ---\nTitre: $title\nResume: $summary\nPoints cles: $points$promptContent\n\n";
         }
 
+        $nbResults = count($results);
+
         $prompt = <<<SYNTH_TEXT
-Tu es un assistant expert en Intelligence Artificielle. Un utilisateur pose une question et tu dois y repondre de maniere structuree en te basant UNIQUEMENT sur les contenus fournis ci-dessous (prompts et articles de notre base de donnees).
+Tu es un assistant expert en Intelligence Artificielle et en prompt engineering. Un utilisateur cherche des informations dans notre base de prompts et articles. Tu dois synthetiser une reponse utile et structuree a partir des contenus fournis.
 
 QUESTION DE L'UTILISATEUR:
 $query
 
-CONTENUS TROUVES DANS LA BASE:
+CONTENUS TROUVES DANS LA BASE ($nbResults resultats):
 $context
 
 ---
@@ -91,17 +97,19 @@ $context
 Reponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans ```json) contenant cette structure:
 
 {
-    "answer": "Reponse synthetique et claire a la question (3-5 phrases). Integre les informations des differents resultats.",
+    "answer": "Reponse synthetique, claire et utile (3-5 phrases). Synthetise les informations des resultats trouves pour repondre au mieux a la question. Si c'est un prompt, explique brievement ce qu'il fait et comment l'utiliser.",
     "key_points": ["Point cle 1", "Point cle 2", "Point cle 3"],
     "recommended_ids": [1, 2],
     "confidence": "haute/moyenne/basse"
 }
 
 REGLES:
-- "recommended_ids" contient les numeros (1-based) des resultats les plus pertinents pour la question
-- Si les contenus ne permettent pas de repondre a la question, indique-le dans "answer" et mets "confidence" a "basse"
+- "recommended_ids" contient les numeros (1-based) des resultats les plus pertinents
+- Confiance "haute" : les resultats repondent directement a la question (meme partiellement)
+- Confiance "moyenne" : les resultats sont lies au sujet mais ne repondent pas exactement
+- Confiance "basse" : les resultats n'ont aucun rapport avec la question
 - Reponds en francais
-- Sois concis et pratique
+- Sois concis, pratique et valorise les contenus trouves
 SYNTH_TEXT;
 
         $response = $this->callApi($prompt);
