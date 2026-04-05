@@ -25,6 +25,21 @@ ob_start();
     <h1><?= $favorites ? 'Favoris - ' : '' ?><?= $status === 'draft' ? 'Brouillons - ' : '' ?><?= $typeLabel ?></h1>
 </div>
 
+<?php if ($type === 'prompt'): ?>
+<div class="suggest-search-box suggest-search-box-large">
+    <h2>Trouvez le prompt qu'il vous faut</h2>
+    <p class="suggest-subtitle">Décrivez votre besoin et trouvez une réponse parmi nos prompts analysés</p>
+    <form id="suggestForm" class="suggest-form" onsubmit="return handleSuggestSearch(event)">
+        <div class="suggest-input-wrapper">
+            <span class="suggest-icon">&#128269;</span>
+            <input type="text" id="suggestQuery" name="q" placeholder="Ex : Comment rédiger un email professionnel ? Générer du code Python ? Analyser un texte ?" autocomplete="off">
+            <button type="submit" class="suggest-btn">Rechercher</button>
+        </div>
+    </form>
+    <div id="suggestResults" class="suggest-results" style="display:none;"></div>
+</div>
+<?php endif; ?>
+
 <div class="article-section">
     <div class="filter-bar">
         <div class="filter-group">

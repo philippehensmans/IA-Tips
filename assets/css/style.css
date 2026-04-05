@@ -1610,6 +1610,45 @@ a:hover {
     margin: 0 0 20px 0;
 }
 
+/* Large variant for prompts page */
+.suggest-search-box-large {
+    padding: 40px 30px;
+}
+
+.suggest-search-box-large h2 {
+    font-size: 1.8em;
+    margin-bottom: 8px;
+}
+
+.suggest-search-box-large .suggest-subtitle {
+    font-size: 1.05em;
+    margin-bottom: 25px;
+}
+
+.suggest-search-box-large .suggest-form {
+    max-width: 750px;
+}
+
+.suggest-search-box-large .suggest-input-wrapper {
+    border-radius: 28px;
+    padding: 6px 6px 6px 20px;
+}
+
+.suggest-search-box-large .suggest-input-wrapper input {
+    font-size: 18px;
+    padding: 14px 0;
+}
+
+.suggest-search-box-large .suggest-btn {
+    padding: 14px 30px;
+    font-size: 16px;
+    border-radius: 22px;
+}
+
+.suggest-search-box-large .suggest-results {
+    max-width: 800px;
+}
+
 .suggest-form {
     max-width: 650px;
     margin: 0 auto;
