@@ -8,6 +8,9 @@ $status = $_GET['status'] ?? null;
 $type = $_GET['type'] ?? null;
 $favorites = $_GET['favorites'] ?? null;
 
+$auth = new Auth();
+$isAdmin = $auth->isAdmin();
+
 $typeLabel = $type === 'prompt' ? 'Prompts' : ($type === 'article' ? 'Articles' : 'Tous les contenus');
 $pageTitle = ($favorites ? 'Favoris - ' : '') . $typeLabel . ($status === 'draft' ? ' - Brouillons' : '') . ' - ' . SITE_NAME;
 
@@ -36,6 +39,15 @@ ob_start();
             <button type="submit" class="suggest-btn">Rechercher</button>
         </div>
     </form>
+    <?php if ($isAdmin): ?>
+    <div id="suggestAIAction" class="suggest-ai-action" style="display:none;">
+        <button type="button" id="suggestAIBtn" class="suggest-ai-btn" onclick="requestAIAnswer()">
+            &#129302; Réponse IA (Claude)
+        </button>
+        <span class="suggest-ai-hint">Admin uniquement - consomme des tokens API</span>
+    </div>
+    <div id="suggestAIResult" class="suggest-ai-result" style="display:none;"></div>
+    <?php endif; ?>
     <div id="suggestResults" class="suggest-results" style="display:none;"></div>
 </div>
 <?php endif; ?>

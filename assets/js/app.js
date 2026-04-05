@@ -407,11 +407,102 @@ function performSuggestSearch(query) {
             }
 
             resultsDiv.innerHTML = html;
+
+            // Afficher le bouton IA si admin et résultats trouvés
+            var aiAction = document.getElementById('suggestAIAction');
+            if (aiAction) {
+                aiAction.style.display = 'block';
+                // Réinitialiser le résultat IA précédent
+                var aiResult = document.getElementById('suggestAIResult');
+                if (aiResult) aiResult.style.display = 'none';
+            }
         })
         .catch(function(err) {
             console.error('Erreur suggest:', err);
             resultsDiv.innerHTML = '<div class="suggest-empty">Erreur lors de la recherche. Réessayez.</div>';
         });
+}
+
+/**
+ * Demander une réponse IA (admin uniquement)
+ */
+function requestAIAnswer() {
+    var query = document.getElementById('suggestQuery').value.trim();
+    if (query.length < 2) return;
+
+    var aiBtn = document.getElementById('suggestAIBtn');
+    var aiResult = document.getElementById('suggestAIResult');
+    if (!aiBtn || !aiResult) return;
+
+    // État loading
+    aiBtn.disabled = true;
+    aiBtn.innerHTML = '&#8987; Analyse par Claude en cours...';
+    aiResult.style.display = 'block';
+    aiResult.innerHTML = '<div class="suggest-loading">Claude analyse votre question et les résultats trouvés...</div>';
+
+    var apiUrl = window.APP_CONFIG ? window.APP_CONFIG.apiUrl : '/api/index.php?action=';
+
+    fetch(apiUrl + 'suggest-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query })
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        aiBtn.disabled = false;
+        aiBtn.innerHTML = '&#129302; Réponse IA (Claude)';
+
+        if (!data.success) {
+            aiResult.innerHTML = '<div class="suggest-ai-error">Erreur : ' + escapeHtml(data.message || 'Erreur inconnue') + '</div>';
+            return;
+        }
+
+        var ai = data.data;
+        var html = '<div class="suggest-ai-card">';
+        html += '<div class="suggest-ai-card-header">';
+        html += '<span class="suggest-ai-badge">&#129302; Réponse IA</span>';
+
+        // Indicateur de confiance
+        var confLabel = { haute: 'Confiance haute', moyenne: 'Confiance moyenne', basse: 'Confiance basse' };
+        var confClass = { haute: 'conf-high', moyenne: 'conf-medium', basse: 'conf-low' };
+        var conf = ai.confidence || 'moyenne';
+        html += '<span class="suggest-ai-conf ' + (confClass[conf] || 'conf-medium') + '">' + (confLabel[conf] || conf) + '</span>';
+        html += '</div>';
+
+        // Réponse synthétique
+        html += '<p class="suggest-ai-answer">' + escapeHtml(ai.answer || '') + '</p>';
+
+        // Points clés
+        if (ai.key_points && ai.key_points.length > 0) {
+            html += '<ul class="suggest-ai-points">';
+            for (var i = 0; i < ai.key_points.length; i++) {
+                html += '<li>' + escapeHtml(ai.key_points[i]) + '</li>';
+            }
+            html += '</ul>';
+        }
+
+        // Contenus recommandés
+        if (data.recommended && data.recommended.length > 0) {
+            html += '<div class="suggest-ai-recommended">';
+            html += '<strong>Contenus recommandés :</strong> ';
+            var baseUrl = window.APP_CONFIG ? window.APP_CONFIG.baseUrl : '';
+            for (var j = 0; j < data.recommended.length; j++) {
+                var rec = data.recommended[j];
+                if (j > 0) html += ', ';
+                html += '<a href="' + baseUrl + '/article.php?slug=' + encodeURIComponent(rec.slug) + '">' + escapeHtml(rec.title) + '</a>';
+            }
+            html += '</div>';
+        }
+
+        html += '</div>';
+        aiResult.innerHTML = html;
+    })
+    .catch(function(err) {
+        console.error('Erreur suggest-ai:', err);
+        aiBtn.disabled = false;
+        aiBtn.innerHTML = '&#129302; Réponse IA (Claude)';
+        aiResult.innerHTML = '<div class="suggest-ai-error">Erreur réseau. Réessayez.</div>';
+    });
 }
 
 function buildFeaturedSnippet(item, query) {

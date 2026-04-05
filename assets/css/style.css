@@ -1852,6 +1852,133 @@ a:hover {
     color: var(--wiki-text-light);
 }
 
+/* AI Answer (admin only) */
+.suggest-ai-action {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.suggest-ai-btn {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+.suggest-ai-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+}
+
+.suggest-ai-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
+.suggest-ai-hint {
+    display: block;
+    font-size: 0.8em;
+    color: var(--wiki-text-light);
+    margin-top: 6px;
+    font-style: italic;
+}
+
+.suggest-ai-result {
+    max-width: 750px;
+    margin: 15px auto 0;
+    text-align: left;
+}
+
+.suggest-ai-card {
+    background: linear-gradient(135deg, #fefefe, #f5f3ff);
+    border: 1px solid #d4d0f0;
+    border-left: 4px solid #6366f1;
+    border-radius: 8px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+.suggest-ai-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.suggest-ai-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: #6366f1;
+    color: white;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.suggest-ai-conf {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.conf-high { background: #d4edda; color: #155724; }
+.conf-medium { background: #fff3cd; color: #856404; }
+.conf-low { background: #f8d7da; color: #721c24; }
+
+.suggest-ai-answer {
+    margin: 0 0 12px 0;
+    font-size: 1em;
+    line-height: 1.7;
+    color: var(--wiki-text);
+}
+
+.suggest-ai-points {
+    margin: 0 0 12px 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.suggest-ai-points li {
+    padding: 4px 0 4px 22px;
+    position: relative;
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+.suggest-ai-points li::before {
+    content: "💡";
+    position: absolute;
+    left: 0;
+}
+
+.suggest-ai-recommended {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e0ddf0;
+    font-size: 0.9em;
+    color: var(--wiki-text-light);
+}
+
+.suggest-ai-recommended a {
+    color: var(--wiki-link);
+}
+
+.suggest-ai-error {
+    padding: 12px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    color: #721c24;
+    font-size: 0.9em;
+}
+
 /* Responsive suggest */
 @media (max-width: 768px) {
     .suggest-search-box {
@@ -1884,5 +2011,15 @@ a:hover {
 
     .suggest-featured {
         padding: 15px;
+    }
+
+    .suggest-ai-card {
+        padding: 15px;
+    }
+
+    .suggest-ai-card-header {
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
     }
 }
