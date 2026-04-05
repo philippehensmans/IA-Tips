@@ -343,6 +343,163 @@ function insertPrompt(textarea) {
 }
 
 /**
+ * Recherche de suggestions homepage (style Google Answer)
+ */
+var suggestTimeout = null;
+
+function handleSuggestSearch(event) {
+    event.preventDefault();
+    var query = document.getElementById('suggestQuery').value.trim();
+    if (query.length < 2) return false;
+    performSuggestSearch(query);
+    return false;
+}
+
+function performSuggestSearch(query) {
+    var resultsDiv = document.getElementById('suggestResults');
+    if (!resultsDiv) return;
+
+    resultsDiv.style.display = 'block';
+    resultsDiv.innerHTML = '<div class="suggest-loading">Recherche en cours...</div>';
+
+    var apiUrl = window.APP_CONFIG ? window.APP_CONFIG.apiUrl : '/api/index.php?action=';
+    var separator = apiUrl.indexOf('?') !== -1 ? '&' : '?';
+    var url = apiUrl + 'suggest' + separator + 'q=' + encodeURIComponent(query);
+
+    fetch(url)
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data.success || !data.data || data.data.length === 0) {
+                resultsDiv.innerHTML = '<div class="suggest-empty">' +
+                    '<strong>Aucun résultat trouvé</strong> pour &laquo; ' + escapeHtml(query) + ' &raquo;' +
+                    '<p>Essayez avec d\'autres mots-clés, ou <a href="search.php?q=' + encodeURIComponent(query) + '">lancez une recherche complète</a>.</p>' +
+                    '</div>';
+                return;
+            }
+
+            var html = '';
+
+            // Featured snippet : le résultat le plus pertinent
+            var best = data.data[0];
+            html += buildFeaturedSnippet(best, query);
+
+            // Autres résultats pertinents
+            if (data.data.length > 1) {
+                html += '<div class="suggest-others">';
+                html += '<h4>Autres résultats pertinents</h4>';
+                html += '<ul class="suggest-list">';
+                for (var i = 1; i < data.data.length; i++) {
+                    var item = data.data[i];
+                    var typeLabel = item.type === 'prompt' ? '💬 Prompt' : '📄 Article';
+                    var baseUrl = window.APP_CONFIG ? window.APP_CONFIG.baseUrl : '';
+                    html += '<li class="suggest-list-item">';
+                    html += '<a href="' + baseUrl + '/article.php?slug=' + encodeURIComponent(item.slug) + '">';
+                    html += '<span class="suggest-type-badge suggest-type-' + item.type + '">' + typeLabel + '</span> ';
+                    html += escapeHtml(item.title);
+                    html += '</a>';
+                    if (item.categories && item.categories.length > 0) {
+                        html += ' <span class="suggest-cats">' + item.categories.slice(0, 2).map(escapeHtml).join(', ') + '</span>';
+                    }
+                    html += '</li>';
+                }
+                html += '</ul>';
+                html += '</div>';
+            }
+
+            resultsDiv.innerHTML = html;
+        })
+        .catch(function(err) {
+            console.error('Erreur suggest:', err);
+            resultsDiv.innerHTML = '<div class="suggest-empty">Erreur lors de la recherche. Réessayez.</div>';
+        });
+}
+
+function buildFeaturedSnippet(item, query) {
+    var typeLabel = item.type === 'prompt' ? '💬 Prompt' : '📄 Article';
+    var baseUrl = window.APP_CONFIG ? window.APP_CONFIG.baseUrl : '';
+    var link = baseUrl + '/article.php?slug=' + encodeURIComponent(item.slug);
+
+    var html = '<div class="suggest-featured">';
+    html += '<div class="suggest-featured-header">';
+    html += '<span class="suggest-type-badge suggest-type-' + item.type + '">' + typeLabel + '</span>';
+    html += '<h3><a href="' + link + '">' + escapeHtml(item.title) + '</a></h3>';
+    html += '</div>';
+
+    // Résumé court (extrait du summary, max 300 chars texte)
+    if (item.summary) {
+        var summaryText = stripHtml(item.summary);
+        if (summaryText.length > 300) {
+            summaryText = summaryText.substring(0, 300) + '...';
+        }
+        html += '<p class="suggest-featured-summary">' + escapeHtml(summaryText) + '</p>';
+    }
+
+    // Points clés (max 4)
+    if (item.main_points) {
+        var pointsHtml = item.main_points;
+        // Extraire les <li> du HTML
+        var liRegex = /<li[^>]*>(.*?)<\/li>/gi;
+        var matches = [];
+        var match;
+        while ((match = liRegex.exec(pointsHtml)) !== null && matches.length < 4) {
+            matches.push(stripHtml(match[1]));
+        }
+        if (matches.length > 0) {
+            html += '<ul class="suggest-featured-points">';
+            for (var j = 0; j < matches.length; j++) {
+                html += '<li>' + escapeHtml(matches[j]) + '</li>';
+            }
+            html += '</ul>';
+        }
+    }
+
+    // Catégories
+    if (item.categories && item.categories.length > 0) {
+        html += '<div class="suggest-featured-cats">';
+        for (var k = 0; k < item.categories.length; k++) {
+            html += '<span class="category-tag' + (item.type === 'prompt' ? ' prompt-tag' : '') + '">' + escapeHtml(item.categories[k]) + '</span>';
+        }
+        html += '</div>';
+    }
+
+    html += '<a href="' + link + '" class="suggest-featured-link">Voir le détail complet &rarr;</a>';
+    html += '</div>';
+
+    return html;
+}
+
+function stripHtml(html) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+}
+
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+}
+
+// Debounce sur l'input pour suggestions en temps réel
+document.addEventListener('DOMContentLoaded', function() {
+    var suggestInput = document.getElementById('suggestQuery');
+    if (suggestInput) {
+        suggestInput.addEventListener('input', function() {
+            clearTimeout(suggestTimeout);
+            var query = this.value.trim();
+            if (query.length < 3) {
+                var resultsDiv = document.getElementById('suggestResults');
+                if (resultsDiv) resultsDiv.style.display = 'none';
+                return;
+            }
+            suggestTimeout = setTimeout(function() {
+                performSuggestSearch(query);
+            }, 400);
+        });
+    }
+});
+
+/**
  * Fonction utilitaire pour les appels API
  */
 async function apiCall(endpoint, method = 'GET', data = null) {

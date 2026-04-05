@@ -41,6 +41,20 @@ ob_start();
     <?= $homePage['content'] ?? '' ?>
 </div>
 
+<!-- Bloc de recherche style Google - Suggestions depuis la base -->
+<div class="suggest-search-box">
+    <h2>Posez votre question sur l'IA</h2>
+    <p class="suggest-subtitle">Trouvez des réponses dans nos prompts et articles analysés</p>
+    <form id="suggestForm" class="suggest-form" onsubmit="return handleSuggestSearch(event)">
+        <div class="suggest-input-wrapper">
+            <span class="suggest-icon">&#128269;</span>
+            <input type="text" id="suggestQuery" name="q" placeholder="Ex : Comment rédiger un prompt efficace ?" autocomplete="off">
+            <button type="submit" class="suggest-btn">Rechercher</button>
+        </div>
+    </form>
+    <div id="suggestResults" class="suggest-results" style="display:none;"></div>
+</div>
+
 <?php if ($isLoggedIn && $draftCount > 0): ?>
 <div class="alert alert-info">
     Vous avez <strong><?= $draftCount ?></strong> élément(s) en brouillon.
