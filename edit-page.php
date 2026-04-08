@@ -66,10 +66,7 @@ ob_start();
 
         <div class="form-group">
             <label for="content">Contenu (HTML autorisé)</label>
-            <textarea id="content" name="content" class="large" style="min-height: 400px;"><?= htmlspecialchars($page['content'] ?? '') ?></textarea>
-            <p class="help-text">
-                Vous pouvez utiliser du HTML : &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;a href=""&gt;, &lt;h2&gt;, &lt;h3&gt;, etc.
-            </p>
+            <textarea id="content" name="content" class="large" style="min-height: 400px;" data-formatting="true"><?= htmlspecialchars($page['content'] ?? '') ?></textarea>
         </div>
 
         <div class="btn-group">
