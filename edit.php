@@ -95,13 +95,11 @@ ob_start();
         <div class="form-group">
             <label for="summary"><?= $isPrompt ? 'Description' : 'Résumé' ?></label>
             <textarea id="summary" name="summary" rows="4" data-formatting="true"><?= htmlspecialchars($article['summary'] ?? '') ?></textarea>
-            <p class="help-text">Utilisez les boutons pour mettre en <strong>gras</strong>, <em>italique</em> ou <u>souligné</u></p>
         </div>
 
         <div class="form-group">
             <label for="main_points"><?= $isPrompt ? 'Cas d\'usage (HTML)' : 'Points principaux (HTML)' ?></label>
-            <textarea id="main_points" name="main_points" rows="6"><?= htmlspecialchars($article['main_points'] ?? '') ?></textarea>
-            <p class="help-text">Utilisez des balises &lt;ul&gt;&lt;li&gt; pour la liste</p>
+            <textarea id="main_points" name="main_points" rows="6" data-formatting="true"><?= htmlspecialchars($article['main_points'] ?? '') ?></textarea>
         </div>
 
         <?php if ($isPrompt): ?>
@@ -114,12 +112,12 @@ ob_start();
 
         <div class="form-group">
             <label for="analysis"><?= $isPrompt ? 'Analyse du prompt (HTML)' : 'Analyse (HTML)' ?></label>
-            <textarea id="analysis" name="analysis" class="large"><?= htmlspecialchars($article['analysis'] ?? '') ?></textarea>
+            <textarea id="analysis" name="analysis" class="large" data-formatting="true"><?= htmlspecialchars($article['analysis'] ?? '') ?></textarea>
         </div>
 
         <div class="form-group">
             <label for="content">Contenu additionnel / Notes</label>
-            <textarea id="content" name="content" rows="6"><?= htmlspecialchars($article['content'] ?? '') ?></textarea>
+            <textarea id="content" name="content" rows="6" data-formatting="true"><?= htmlspecialchars($article['content'] ?? '') ?></textarea>
         </div>
 
         <div class="form-group">

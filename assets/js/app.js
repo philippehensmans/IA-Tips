@@ -81,15 +81,22 @@ function initTinyMCE() {
         selector: 'textarea[data-formatting="true"]',
         language: 'fr_FR',
         language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/fr_FR.min.js',
-        height: 350,
-        menubar: false,
+        height: 400,
+        menubar: 'file edit view insert format tools table help',
         branding: false,
         promotion: false,
         plugins: [
-            'lists', 'table', 'image', 'link', 'code', 'codesample'
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'visualchars', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'codesample', 'help', 'wordcount',
+            'emoticons', 'nonbreaking', 'pagebreak', 'directionality'
         ],
-        toolbar: 'undo redo | bold italic underline | bullist numlist | table | image link | codesample | code',
+        toolbar: [
+            'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor removeformat',
+            'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | codesample blockquote hr | charmap emoticons | fullscreen preview code'
+        ],
         toolbar_mode: 'wrap',
+        block_formats: 'Paragraphe=p; Titre 1=h1; Titre 2=h2; Titre 3=h3; Titre 4=h4; Titre 5=h5; Titre 6=h6; Préformaté=pre; Citation=blockquote',
         // Configuration upload d'images
         images_upload_url: (window.APP_CONFIG ? window.APP_CONFIG.uploadUrl : '/api/upload.php'),
         images_upload_credentials: true,
