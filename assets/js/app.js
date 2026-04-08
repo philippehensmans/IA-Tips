@@ -82,7 +82,17 @@ function initTinyMCE() {
         language: 'fr_FR',
         language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/fr_FR.min.js',
         height: 400,
-        menubar: 'file edit view insert format tools table help',
+        menubar: true,
+        menu: {
+            file: { title: 'Fichier', items: 'newdocument restoredraft | preview | export print | deleteallconversations' },
+            edit: { title: 'Édition', items: 'undo redo | cut copy paste pastetext | selectall | searchreplace' },
+            view: { title: 'Affichage', items: 'code | visualaid visualchars visualblocks | preview fullscreen' },
+            insert: { title: 'Insertion', items: 'image link media addcomment pageembed codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents | insertdatetime' },
+            format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat' },
+            tools: { title: 'Outils', items: 'wordcount' },
+            table: { title: 'Tableau', items: 'inserttable | cell row column | advtablesort | tableprops deletetable' },
+            help: { title: 'Aide', items: 'help' }
+        },
         branding: false,
         promotion: false,
         plugins: [
