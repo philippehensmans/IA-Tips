@@ -62,6 +62,15 @@ if (!defined('BLUESKY_AUTO_SHARE')) {
     define('BLUESKY_AUTO_SHARE', false); // Partage automatique à la création d'article
 }
 
+// Configuration Threads (Meta Graph API)
+// Créez un token sur https://developers.facebook.com/ (Threads API)
+if (!defined('THREADS_USER_ID')) {
+    define('THREADS_USER_ID', ''); // Votre user ID Threads numérique
+}
+if (!defined('THREADS_ACCESS_TOKEN')) {
+    define('THREADS_ACCESS_TOKEN', ''); // Token d'accès longue durée
+}
+
 // Chemin de base (auto-détecté ou défini manuellement)
 // Ex: si installé dans /wikitips/, définir BASE_PATH = '/wikitips'
 if (!defined('BASE_PATH')) {

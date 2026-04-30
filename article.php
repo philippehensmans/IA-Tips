@@ -8,6 +8,10 @@ $bluesky = new BlueskyService();
 $blueskyConfigured = $bluesky->isConfigured();
 $blueskyMessage = $_GET['bluesky'] ?? '';
 
+$threads = new ThreadsService();
+$threadsConfigured = $threads->isConfigured();
+$threadsMessage = $_GET['threads'] ?? '';
+
 $slug = $_GET['slug'] ?? '';
 if (!$slug) {
     header('Location: ' . url());
@@ -70,6 +74,16 @@ ob_start();
 </div>
 <?php endif; ?>
 
+<?php if ($threadsMessage === 'success'): ?>
+<div class="success-message">
+    Article partagé sur Threads avec succès !
+</div>
+<?php elseif ($threadsMessage === 'error'): ?>
+<div class="error-message">
+    Erreur lors du partage sur Threads. <?= htmlspecialchars($_GET['error'] ?? '') ?>
+</div>
+<?php endif; ?>
+
 <?php $articleAuth = new Auth(); ?>
 <div class="article-header">
     <div class="article-actions">
@@ -79,6 +93,9 @@ ob_start();
         <a href="<?= htmlspecialchars($whatsappUrl) ?>" class="btn-whatsapp" target="_blank" title="Partager sur WhatsApp">WhatsApp</a>
         <?php if ($blueskyConfigured && !$isPrompt): ?>
         <a href="<?= url('share-bluesky.php?id=' . $article['id']) ?>" class="btn-bluesky" title="Partager sur Bluesky">Bluesky</a>
+        <?php endif; ?>
+        <?php if ($threadsConfigured): ?>
+        <a href="<?= url('share-threads.php?id=' . $article['id']) ?>" class="btn-threads" title="Partager sur Threads">Threads</a>
         <?php endif; ?>
         <?php if ($articleAuth->isEditor()): ?>
             <a href="#" onclick="confirmDelete(<?= $article['id'] ?>); return false;">Supprimer</a>
