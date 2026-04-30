@@ -560,6 +560,24 @@ a:hover {
     color: white;
 }
 
+.btn-threads {
+    background: #000;
+    border-color: #333;
+    color: white !important;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+.btn-threads:hover {
+    background: #333;
+    text-decoration: none;
+}
+
+.btn-threads:visited {
+    color: white;
+}
+
 .btn-group {
     display: flex;
     gap: 10px;

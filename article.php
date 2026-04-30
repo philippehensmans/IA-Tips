@@ -57,6 +57,20 @@ if (!empty($article['summary'])) {
 $whatsappText .= $articleUrl;
 $whatsappUrl = 'https://wa.me/?text=' . rawurlencode($whatsappText);
 
+// Message Threads
+$threadsText = ($isPrompt ? "💬 " : "💡 ") . $article['title'] . "\n\n";
+if (!empty($article['summary'])) {
+    $summaryClean = html_entity_decode(strip_tags($article['summary']), ENT_QUOTES, 'UTF-8');
+    $summaryClean = preg_replace('/\s+/', ' ', trim($summaryClean));
+    $summaryShort = mb_substr($summaryClean, 0, 200);
+    if (mb_strlen($summaryClean) > 200) {
+        $summaryShort .= '...';
+    }
+    $threadsText .= $summaryShort . "\n\n";
+}
+$threadsText .= $articleUrl;
+$threadsUrl = 'https://www.threads.net/intent/post?text=' . rawurlencode($threadsText);
+
 ob_start();
 ?>
 
@@ -70,6 +84,7 @@ ob_start();
 </div>
 <?php endif; ?>
 
+
 <?php $articleAuth = new Auth(); ?>
 <div class="article-header">
     <div class="article-actions">
@@ -80,6 +95,7 @@ ob_start();
         <?php if ($blueskyConfigured && !$isPrompt): ?>
         <a href="<?= url('share-bluesky.php?id=' . $article['id']) ?>" class="btn-bluesky" title="Partager sur Bluesky">Bluesky</a>
         <?php endif; ?>
+        <a href="<?= htmlspecialchars($threadsUrl) ?>" class="btn-threads" target="_blank" title="Partager sur Threads">Threads</a>
         <?php if ($articleAuth->isEditor()): ?>
             <a href="#" onclick="confirmDelete(<?= $article['id'] ?>); return false;">Supprimer</a>
         <?php endif; ?>
