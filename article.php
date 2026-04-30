@@ -8,10 +8,6 @@ $bluesky = new BlueskyService();
 $blueskyConfigured = $bluesky->isConfigured();
 $blueskyMessage = $_GET['bluesky'] ?? '';
 
-$threads = new ThreadsService();
-$threadsConfigured = $threads->isConfigured();
-$threadsMessage = $_GET['threads'] ?? '';
-
 $slug = $_GET['slug'] ?? '';
 if (!$slug) {
     header('Location: ' . url());
@@ -61,6 +57,20 @@ if (!empty($article['summary'])) {
 $whatsappText .= $articleUrl;
 $whatsappUrl = 'https://wa.me/?text=' . rawurlencode($whatsappText);
 
+// Message Threads
+$threadsText = ($isPrompt ? "💬 " : "💡 ") . $article['title'] . "\n\n";
+if (!empty($article['summary'])) {
+    $summaryClean = html_entity_decode(strip_tags($article['summary']), ENT_QUOTES, 'UTF-8');
+    $summaryClean = preg_replace('/\s+/', ' ', trim($summaryClean));
+    $summaryShort = mb_substr($summaryClean, 0, 200);
+    if (mb_strlen($summaryClean) > 200) {
+        $summaryShort .= '...';
+    }
+    $threadsText .= $summaryShort . "\n\n";
+}
+$threadsText .= $articleUrl;
+$threadsUrl = 'https://www.threads.net/intent/post?text=' . rawurlencode($threadsText);
+
 ob_start();
 ?>
 
@@ -74,15 +84,6 @@ ob_start();
 </div>
 <?php endif; ?>
 
-<?php if ($threadsMessage === 'success'): ?>
-<div class="success-message">
-    Article partagé sur Threads avec succès !
-</div>
-<?php elseif ($threadsMessage === 'error'): ?>
-<div class="error-message">
-    Erreur lors du partage sur Threads. <?= htmlspecialchars($_GET['error'] ?? '') ?>
-</div>
-<?php endif; ?>
 
 <?php $articleAuth = new Auth(); ?>
 <div class="article-header">
@@ -94,9 +95,7 @@ ob_start();
         <?php if ($blueskyConfigured && !$isPrompt): ?>
         <a href="<?= url('share-bluesky.php?id=' . $article['id']) ?>" class="btn-bluesky" title="Partager sur Bluesky">Bluesky</a>
         <?php endif; ?>
-        <?php if ($threadsConfigured): ?>
-        <a href="<?= url('share-threads.php?id=' . $article['id']) ?>" class="btn-threads" title="Partager sur Threads">Threads</a>
-        <?php endif; ?>
+        <a href="<?= htmlspecialchars($threadsUrl) ?>" class="btn-threads" target="_blank" title="Partager sur Threads">Threads</a>
         <?php if ($articleAuth->isEditor()): ?>
             <a href="#" onclick="confirmDelete(<?= $article['id'] ?>); return false;">Supprimer</a>
         <?php endif; ?>
